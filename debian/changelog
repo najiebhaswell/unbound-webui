@@ -1,3 +1,9 @@
+unbound-webui (1.0.11-1) stable; urgency=medium
+
+  * Update blocklist count logic and cleanup
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Sat, 03 Jan 2026 20:21:00 +0700
+
 unbound-webui (1.0.10-1) stable; urgency=medium
 
   * Added Domain Forwarder feature (forward-zone management)
