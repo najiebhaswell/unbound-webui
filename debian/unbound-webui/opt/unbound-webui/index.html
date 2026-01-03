@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unbound DNS - Control Panel</title>
+    <title>TrustPositif DNS Manager</title>
     <style>
         * {
             margin: 0;
@@ -12,426 +12,473 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%);
-            color: #e4e4e4;
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-dim: #64748b;
+            --primary: #3b82f6;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --purple: #8b5cf6;
         }
 
-        .container {
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .status-badge {
+            background: var(--green);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .header-right a {
+            color: var(--text-dim);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .header-right a:hover {
+            color: var(--primary);
+        }
+
+        /* Tabs - Centered */
+        .tabs-bar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            padding: 0 32px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+        }
+
+        .tab {
+            padding: 16px 28px;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text);
+            background: #f1f5f9;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Content */
+        .content {
+            padding: 32px;
             max-width: 1400px;
             margin: 0 auto;
         }
 
-        .header {
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Page Header */
+        .page-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 28px;
         }
 
-        h1 {
-            color: #00d9ff;
-            font-size: 1.5rem;
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
         }
 
-        .user-menu {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .user-menu span {
-            color: #888;
-            font-size: 0.85rem;
-        }
-
-        .btn-link {
-            background: none;
+        .btn-action {
+            padding: 10px 20px;
             border: none;
-            color: #00d9ff;
-            cursor: pointer;
-            font-size: 0.85rem;
-            text-decoration: underline;
-        }
-
-        .btn-link:hover {
-            color: #fff;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 20px;
-        }
-
-        .left-col {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .right-col {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        @media (max-width: 1200px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: rgba(20, 30, 50, 0.8);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(0, 217, 255, 0.2);
-        }
-
-        .card h2 {
-            font-size: 0.95rem;
-            color: #00d9ff;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stats-row {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .stat-box {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 15px 20px;
             border-radius: 8px;
-            text-align: center;
-            min-width: 120px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
         }
 
         .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #fff;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .stat-value.blue {
+            color: var(--primary);
+        }
+
+        .stat-value.green {
+            color: var(--green);
+        }
+
+        .stat-value.yellow {
+            color: var(--yellow);
+        }
+
+        .stat-value.purple {
+            color: var(--purple);
+        }
+
+        .stat-value.red {
+            color: var(--red);
         }
 
         .stat-label {
-            font-size: 0.7rem;
-            color: #888;
-            text-transform: uppercase;
-            margin-top: 5px;
+            font-size: 13px;
+            color: var(--text-dim);
         }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 8px;
         }
 
-        .status-dot.active {
-            background: #00ff88;
-            box-shadow: 0 0 10px #00ff88;
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
         }
 
-        .status-dot.inactive {
-            background: #ff4444;
-        }
-
-        .graph-container {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .graph-header {
+        .card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
-        .graph-title {
-            font-size: 0.9rem;
-            color: #00d9ff;
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
         }
 
-        .graph-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 0.65rem;
+        .card-body {
+            padding: 24px;
         }
 
-        .graph-stats span {
-            color: #888;
-        }
-
-        .graph-stats .value {
-            color: #fff;
-            font-weight: bold;
-        }
-
+        /* Graph Controls */
         .graph-controls {
             display: flex;
             gap: 4px;
-            justify-content: flex-end;
-            margin-bottom: 10px;
         }
 
-        .btn-range {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #aaa;
-            padding: 4px 8px;
-            font-size: 0.7rem;
-            border-radius: 4px;
+        .range-btn {
+            padding: 6px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-dim);
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 12px;
+            font-weight: 500;
         }
 
-        .btn-range:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
+        .range-btn:hover {
+            background: white;
+            color: var(--text);
         }
 
-        .btn-range.active {
-            background: rgba(0, 217, 255, 0.2);
-            border-color: #00d9ff;
-            color: #00d9ff;
+        .range-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
 
         #qpsChart {
             width: 100%;
-            height: 250px;
+            height: 200px;
         }
 
-        .graph-legend {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-            font-size: 0.7rem;
-            color: #888;
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
         }
 
-        .legend-color {
-            width: 12px;
-            height: 3px;
-            border-radius: 1px;
+        @media (max-width: 1000px) {
+
+            .stats-grid,
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
-        .legend-qps {
-            background: #00d9ff;
+        @media (max-width: 700px) {
+
+            .stats-grid,
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #00d9ff, #0099cc);
-            color: #000;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffaa00, #ff7700);
-            color: #000;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ff4444, #cc0000);
-            color: #fff;
-        }
-
-        .btn-sm {
-            padding: 4px 8px;
-            font-size: 0.7rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .scroll-table {
-            max-height: 250px;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
-
-        th,
-        td {
-            padding: 6px 4px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        th {
-            color: #666;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            position: sticky;
-            top: 0;
-            background: rgba(20, 30, 50, 0.95);
-        }
-
-        .iface-name {
-            font-family: monospace;
-            color: #00d9ff;
-            font-size: 0.7rem;
-        }
-
-        .iface-ip {
-            font-family: monospace;
-            font-size: 0.65rem;
-        }
-
-        .ipv4 {
-            color: #aaa;
-        }
-
-        .ipv6 {
-            color: #ff9800;
-            font-size: 0.6rem;
-        }
-
-        .state-up {
-            color: #00ff88;
-        }
-
-        .state-down {
-            color: #ff4444;
-        }
-
+        /* Forms */
         input,
-        select {
+        select,
+        textarea {
             width: 100%;
-            padding: 8px 10px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.4);
-            color: #fff;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 12px;
         }
 
         input:focus,
-        select:focus {
+        select:focus,
+        textarea:focus {
             outline: none;
-            border-color: #00d9ff;
+            border-color: var(--primary);
+            background: white;
         }
 
         .form-row {
             display: flex;
-            gap: 8px;
+            gap: 12px;
+            align-items: center;
         }
 
-        .section-title {
-            font-size: 0.75rem;
-            color: #666;
-            margin: 15px 0 8px;
+        .form-label {
+            font-size: 12px;
+            color: var(--text-dim);
             text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
-        .alert {
-            padding: 10px 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            display: none;
-            font-size: 0.85rem;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
         }
 
-        .alert-success {
-            background: rgba(0, 255, 136, 0.15);
-            border: 1px solid #00ff88;
-            color: #00ff88;
+        .btn-blue {
+            background: var(--primary);
+            color: white;
         }
 
-        .alert-error {
-            background: rgba(255, 68, 68, 0.15);
-            border: 1px solid #ff4444;
-            color: #ff4444;
+        .btn-gray {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
         }
 
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            font-weight: 600;
+            background: var(--bg);
+        }
+
+        .scroll-box {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Badges */
         .badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.65rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 600;
         }
 
         .badge-allow {
-            background: #00aa66;
-            color: #fff;
+            background: #dcfce7;
+            color: #166534;
         }
 
         .badge-deny {
-            background: #ff4444;
-            color: #fff;
+            background: #fee2e2;
+            color: #991b1b;
         }
 
-        .badge-refuse {
-            background: #ffaa00;
-            color: #000;
-        }
-
-        .acl-row {
+        /* ACL List */
+        .acl-item {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .acl-network {
-            font-family: monospace;
-            font-size: 0.8rem;
-        }
-
-        .acl-actions {
-            display: flex;
             align-items: center;
-            gap: 8px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
         }
 
+        .acl-item:last-child {
+            border: none;
+        }
+
+        /* Result Box */
+        .result-box {
+            margin-top: 16px;
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            max-height: 180px;
+            overflow: auto;
+            display: none;
+            border: 1px solid var(--border);
+        }
+
+        /* Alert */
+        .alert {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .alert-success {
+            background: var(--green);
+            color: white;
+        }
+
+        .alert-error {
+            background: var(--red);
+            color: white;
+        }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -441,570 +488,321 @@
             display: flex;
         }
 
-        .modal-content {
-            background: rgba(20, 30, 50, 0.95);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 217, 255, 0.3);
-            width: 100%;
-            max-width: 360px;
+        .modal-box {
+            background: var(--card);
+            padding: 28px;
+            border-radius: 16px;
+            width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
-        .modal-content h3 {
-            color: #00d9ff;
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
             margin-bottom: 20px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #00d9ff;
-            border-radius: 3px;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌐 Unbound DNS Control Panel</h1>
-            <div class="user-menu">
-                <span>👤 admin</span>
-                <button class="btn-link" onclick="showPasswordModal()">Change Password</button>
-                <button class="btn-link" onclick="logout()">Logout</button>
+    <div class="header">
+        <div class="logo">
+            <span class="logo-icon">🛡️</span>
+            <span class="logo-text">TrustPositif DNS</span>
+            <span class="status-badge" id="statusBadge">ONLINE</span>
+        </div>
+        <div class="header-right">
+            <a onclick="showPasswordModal()">🔑 Password</a>
+            <a onclick="logout()">Logout</a>
+        </div>
+    </div>
+
+    <div class="tabs-bar">
+        <div class="tabs">
+            <div class="tab active" onclick="showPage('dashboard')">📊 Dashboard</div>
+            <div class="tab" onclick="showPage('network')">⚙️ Settings</div>
+            <div class="tab" onclick="showPage('config')">🔒 Filters</div>
+            <div class="tab" onclick="showPage('tools')">🔧 Tools</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Dashboard -->
+        <div id="page-dashboard" class="page active">
+            <div class="page-header">
+                <span class="page-title">Dashboard</span>
+                <button class="btn-action btn-primary" onclick="reload()">🔄 Reload</button>
+                <button class="btn-action btn-secondary" onclick="restart()">⚡ Restart</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value blue" id="totalQueries">0</div>
+                    <div class="stat-label">DNS Queries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value green" id="cacheHits">0</div>
+                    <div class="stat-label">Cache Hits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value yellow" id="uptime">-</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value purple" id="qps">0</div>
+                    <div class="stat-label">Queries/sec</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value blue" id="cpuLoad">-</div>
+                    <div class="stat-label">CPU Load</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value green" id="memUsage">-</div>
+                    <div class="stat-label">Memory</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value yellow" id="diskUsage">-</div>
+                    <div class="stat-label">Disk</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value purple" id="netTraffic">-</div>
+                    <div class="stat-label">Network</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Query Statistics</span>
+                    <div class="graph-controls">
+                        <button class="range-btn" data-range="1h" onclick="setRange('1h')">1H</button>
+                        <button class="range-btn" data-range="12h" onclick="setRange('12h')">12H</button>
+                        <button class="range-btn active" data-range="24h" onclick="setRange('24h')">24H</button>
+                        <button class="range-btn" data-range="7d" onclick="setRange('7d')">7D</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="qpsChart"></canvas>
+                    <div
+                        style="display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:13px;color:var(--text-dim);">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:24px;height:3px;background:var(--primary);border-radius:2px;"></span>
+                            <span>Queries/sec</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="alert" class="alert"></div>
-
-        <div class="main-grid">
-            <div class="left-col">
-                <!-- Stats & Graph Card -->
+        <!-- Settings -->
+        <div id="page-network" class="page">
+            <div class="page-header">
+                <span class="page-title">Settings</span>
+            </div>
+            <div class="grid-2">
                 <div class="card">
-                    <h2><span class="status-dot" id="statusDot"></span> Service Status</h2>
-                    <div class="stats-row">
-                        <div class="stat-box">
-                            <div class="stat-value" id="qps">-</div>
-                            <div class="stat-label">Queries/sec</div>
+                    <div class="card-header"><span class="card-title">Network Interfaces</span></div>
+                    <div class="card-body">
+                        <div class="scroll-box">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Interface</th>
+                                        <th>IPv4</th>
+                                        <th>State</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="interfaceTable"></tbody>
+                            </table>
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="totalQueries">-</div>
-                            <div class="stat-label">Total Queries</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="cacheHits">-</div>
-                            <div class="stat-label">Cache Hits</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="uptime">-</div>
-                            <div class="stat-label">Uptime</div>
-                        </div>
-                    </div>
-
-                    <div class="graph-container">
-                        <div class="graph-header">
-                            <div class="graph-title">📈 QPS History</div>
-                            <div class="graph-stats">
-                                <span>Cur: <span class="value" id="graphCur">-</span></span>
-                                <span>Min: <span class="value" id="graphMin">-</span></span>
-                                <span>Avg: <span class="value" id="graphAvg">-</span></span>
-                                <span>Max: <span class="value" id="graphMax">-</span></span>
+                        <div style="margin-top:20px;">
+                            <div class="form-label">Add IP</div>
+                            <div class="form-row">
+                                <select id="ifaceSelect" style="flex:1;margin:0;"></select>
+                                <input id="newIp" placeholder="IP Address" style="flex:2;margin:0;">
+                                <input id="newPrefix" value="24" style="width:60px;margin:0;">
+                                <button class="btn btn-blue" onclick="addIp()">Add</button>
                             </div>
                         </div>
-
-                        <div class="graph-controls">
-                            <button class="btn-range" onclick="setRange('1h')" data-range="1h">1h</button>
-                            <button class="btn-range" onclick="setRange('12h')" data-range="12h">12h</button>
-                            <button class="btn-range active" onclick="setRange('24h')" data-range="24h">24h</button>
-                            <button class="btn-range" onclick="setRange('7d')" data-range="7d">7d</button>
-                            <button class="btn-range" onclick="setRange('30d')" data-range="30d">30d</button>
-                        </div>
-
-                        <canvas id="qpsChart"></canvas>
-                        <div class="graph-legend">
-                            <div class="legend-item">
-                                <div class="legend-color legend-qps"></div> Queries/sec
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="reload()">🔄 Reload</button>
-                        <button class="btn btn-warning" onclick="restart()">⚡ Restart</button>
                     </div>
                 </div>
-
-                <!-- Interfaces Card -->
                 <div class="card">
-                    <h2>🔌 Network Interfaces</h2>
-                    <div class="scroll-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Interface</th>
-                                    <th>IPv4</th>
-                                    <th>IPv6</th>
-                                    <th>State</th>
-                                </tr>
-                            </thead>
-                            <tbody id="interfaceTable"></tbody>
-                        </table>
+                    <div class="card-header"><span class="card-title">Access Control</span></div>
+                    <div class="card-body">
+                        <div class="scroll-box" id="aclList"></div>
+                        <div style="margin-top:20px;">
+                            <div class="form-label">Add ACL</div>
+                            <div class="form-row">
+                                <input id="aclNetwork" placeholder="10.0.0.0/8" style="flex:2;margin:0;">
+                                <select id="aclAction" style="flex:1;margin:0;">
+                                    <option value="allow">Allow</option>
+                                    <option value="deny">Deny</option>
+                                </select>
+                                <button class="btn btn-blue" onclick="addAcl()">Add</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="section-title">Add IP Address</div>
-                    <div class="form-row">
-                        <select id="ifaceSelect" style="flex:1;"></select>
-                        <input type="text" id="newIp" placeholder="IP (v4 or v6)" style="flex:2;">
-                        <input type="text" id="newPrefix" placeholder="/24" value="24" style="flex:0.5;">
-                    </div>
-                    <button class="btn btn-primary" onclick="addIp()" style="width:100%;">➕ Add IP</button>
                 </div>
             </div>
+        </div>
 
-            <div class="right-col">
-                <!-- Lamanlabuh Card -->
+        <!-- Filters -->
+        <div id="page-config" class="page">
+            <div class="page-header">
+                <span class="page-title">Filters</span>
+            </div>
+            <div class="grid-3">
                 <div class="card">
-                    <h2>🚫 Lamanlabuh (Sinkhole)</h2>
-                    <p style="font-size:0.75rem;color:#888;margin-bottom:15px;">
-                        IP redirect untuk domain yang diblokir. Pisahkan dengan koma untuk multiple IP.
-                    </p>
-                    <div class="section-title">IPv4 Sinkhole (comma-separated)</div>
-                    <input type="text" id="sinkholeIpv4" placeholder="103.217.209.188, 139.255.196.196, 182.23.79.195"
-                        style="font-size:0.85rem;">
-                    <div class="section-title">IPv6 Sinkhole (comma-separated)</div>
-                    <input type="text" id="sinkholeIpv6" placeholder="2001:db8::1, 2001:db8::2"
-                        style="font-size:0.85rem;">
-                    <div class="btn-group" style="margin-top:15px;">
-                        <button class="btn btn-primary" onclick="saveSinkhole()">💾 Simpan</button>
-                        <button class="btn btn-warning" onclick="fetchSinkhole()">🔄 Refresh</button>
+                    <div class="card-header"><span class="card-title">Sinkhole IP</span></div>
+                    <div class="card-body">
+                        <div class="form-label">IPv4</div>
+                        <input id="sinkholeIpv4" placeholder="103.217.209.188">
+                        <div class="form-label">IPv6</div>
+                        <input id="sinkholeIpv6" placeholder="2001:db8::1">
+                        <button class="btn btn-blue" onclick="saveSinkhole()" style="width:100%;">Save</button>
                     </div>
                 </div>
-
-                <!-- ACL Card -->
                 <div class="card">
-                    <h2>🔒 Access Control</h2>
-                    <div class="scroll-table" style="max-height:350px;">
-                        <div id="aclList"></div>
+                    <div class="card-header"><span class="card-title">Forwarders</span></div>
+                    <div class="card-body">
+                        <div class="scroll-box" id="forwarderList" style="max-height:80px;margin-bottom:12px;"></div>
+                        <textarea id="forwarderInput" rows="2" placeholder="domain,ip1,ip2"></textarea>
+                        <button class="btn btn-blue" onclick="addForwarder()" style="width:100%;">Add</button>
                     </div>
-                    <div class="section-title">Add ACL Rule</div>
-                    <div class="form-row">
-                        <input type="text" id="aclNetwork" placeholder="10.0.0.0/8 or 2001:db8::/32">
-                        <select id="aclAction">
-                            <option value="allow">Allow</option>
-                            <option value="deny">Deny</option>
-                            <option value="refuse">Refuse</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" onclick="addAcl()" style="width:100%;">➕ Add Rule</button>
                 </div>
-
-                <!-- Domain Forwarder Card -->
                 <div class="card">
-                    <h2>🔀 Domain Forwarder</h2>
-                    <p style="font-size:0.75rem;color:#888;margin-bottom:10px;">
-                        Forward domain tertentu ke resolver publik.<br>
-                        Format: <code>domain,resolver1,resolver2,...</code>
-                    </p>
-                    <div class="scroll-table" style="max-height:200px;margin-bottom:10px;">
-                        <div id="forwarderList"></div>
+                    <div class="card-header"><span class="card-title">Whitelist</span></div>
+                    <div class="card-body">
+                        <textarea id="whitelistInput" rows="4" placeholder="google.com"></textarea>
+                        <button class="btn btn-blue" onclick="saveWhitelist()" style="width:100%;">Save</button>
                     </div>
-                    <div class="section-title">Add Forwarder</div>
-                    <textarea id="forwarderInput" rows="2" placeholder="sipp.bpjsketenagakerjaan.go.id,1.1.1.1,8.8.8.8"
-                        style="width:100%;font-size:0.85rem;font-family:monospace;"></textarea>
-                    <div class="btn-group" style="margin-top:10px;">
-                        <button class="btn btn-primary" onclick="addForwarder()">➕ Add</button>
-                        <button class="btn btn-warning" onclick="fetchForwarders()">🔄 Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools -->
+        <div id="page-tools" class="page">
+            <div class="page-header">
+                <span class="page-title">Tools</span>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Check Domain</span></div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <input id="checkDomainInput" placeholder="example.com" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="checkDomain()">Check</button>
+                        </div>
+                        <div id="checkResult" style="margin-top:16px;font-size:18px;font-weight:600;display:none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">DNS Lookup</span></div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <input id="digDomain" placeholder="google.com" style="flex:1;margin:0;">
+                            <select id="digType" style="width:80px;margin:0;">
+                                <option>A</option>
+                                <option>AAAA</option>
+                                <option>MX</option>
+                                <option>NS</option>
+                                <option>TXT</option>
+                            </select>
+                            <button class="btn btn-blue" onclick="runDig()">Dig</button>
+                        </div>
+                        <pre id="digResult" class="result-box"></pre>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Ping</span></div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <input id="pingHost" placeholder="8.8.8.8" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="runPing()">Ping</button>
+                        </div>
+                        <pre id="pingResult" class="result-box"></pre>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">MTR</span></div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <input id="mtrHost" placeholder="8.8.8.8" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="runMtr()">Run</button>
+                        </div>
+                        <pre id="mtrResult" class="result-box"></pre>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Password Modal -->
+    <div id="alert" class="alert"></div>
     <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <h3>🔑 Change Password</h3>
+        <div class="modal-box">
+            <div class="modal-title">Change Password</div>
             <input type="password" id="currentPass" placeholder="Current Password">
             <input type="password" id="newPass" placeholder="New Password">
-            <input type="password" id="confirmPass" placeholder="Confirm New Password">
-            <div class="btn-group" style="margin-top:15px;">
-                <button class="btn btn-primary" onclick="changePassword()">Save</button>
-                <button class="btn btn-danger" onclick="hidePasswordModal()">Cancel</button>
+            <input type="password" id="confirmPass" placeholder="Confirm Password">
+            <div class="form-row" style="margin-top:12px;">
+                <button class="btn btn-blue" onclick="changePassword()" style="flex:1;">Save</button>
+                <button class="btn btn-gray" onclick="hidePasswordModal()" style="flex:1;">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
-        const API = '';
-        let graphData = [];
-        let graphStats = {};
-        let currentRange = '24h';
+        const API = ''; let graphData = [], currentRange = '24h', lastNetStats = null, lastNetTime = null;
+        const titles = { dashboard: 'Dashboard', network: 'Settings', config: 'Filters', tools: 'Tools' };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchAll();
-            setInterval(fetchStats, 5000);
-            setInterval(fetchGraph, 10000);
-            // Initial fetch
-            setRange('24h');
-        });
+        function showPage(p) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); document.getElementById('page-' + p).classList.add('active'); event.target.classList.add('active'); }
 
-        async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchGraph()]); }
+        document.addEventListener('DOMContentLoaded', () => { fetchAll(); setInterval(fetchStats, 5000); setInterval(fetchGraph, 10000); setInterval(fetchSystemStats, 5000); });
+        async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchGraph(), fetchSystemStats(), fetchWhitelist()]); }
+        function setRange(r) { currentRange = r; document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('active', b.dataset.range === r)); fetchGraph(); }
 
-        function setRange(range) {
-            currentRange = range;
-            document.querySelectorAll('.btn-range').forEach(b => {
-                b.classList.toggle('active', b.getAttribute('data-range') === range);
-            });
-            fetchGraph();
-        }
+        async function fetchStats() { try { const r = await fetch(API + '/api/stats'); if (r.status === 401) { window.location.href = '/login'; return; } const d = await r.json(); document.getElementById('totalQueries').textContent = formatNumber(d.total_queries); document.getElementById('cacheHits').textContent = formatNumber(d.cache_hits); document.getElementById('uptime').textContent = formatUptime(d.uptime); document.getElementById('qps').textContent = d.qps.toFixed(1); document.getElementById('statusBadge').textContent = 'ONLINE'; document.getElementById('statusBadge').style.background = 'var(--green)'; } catch (e) { document.getElementById('statusBadge').textContent = 'OFFLINE'; document.getElementById('statusBadge').style.background = 'var(--red)'; } }
 
-        async function fetchStats() {
-            try {
-                const res = await fetch(API + '/api/stats');
-                if (res.status === 401) { window.location.href = '/login'; return; }
-                const data = await res.json();
-                document.getElementById('qps').textContent = data.qps.toFixed(1);
-                document.getElementById('totalQueries').textContent = formatNumber(data.total_queries);
-                document.getElementById('cacheHits').textContent = formatNumber(data.cache_hits);
-                document.getElementById('uptime').textContent = formatUptime(data.uptime);
-                document.getElementById('statusDot').className = 'status-dot active';
-            } catch (e) { document.getElementById('statusDot').className = 'status-dot inactive'; }
-        }
+        async function fetchSystemStats() { try { const r = await fetch(API + '/api/system'); const d = await r.json(); if (d.cpu) document.getElementById('cpuLoad').textContent = d.cpu.load1.toFixed(2); if (d.memory) { const u = (d.memory.used_mb / 1024).toFixed(1), t = (d.memory.total_mb / 1024).toFixed(0); document.getElementById('memUsage').textContent = u + '/' + t + 'G'; } if (d.disk) document.getElementById('diskUsage').textContent = d.disk.used_gb.toFixed(0) + '/' + d.disk.total_gb.toFixed(0) + 'G'; if (d.network) { const now = Date.now(); if (lastNetStats && lastNetTime) { const el = (now - lastNetTime) / 1000, df = ((d.network.rx_mb - lastNetStats.rx) + (d.network.tx_mb - lastNetStats.tx)) * 1024 * 8 / el; document.getElementById('netTraffic').textContent = df > 1000 ? (df / 1000).toFixed(1) + ' Mbps' : df.toFixed(0) + ' Kbps'; } else document.getElementById('netTraffic').textContent = '...'; lastNetStats = { rx: d.network.rx_mb, tx: d.network.tx_mb }; lastNetTime = now; } } catch (e) { } }
 
-        async function fetchGraph() {
-            try {
-                const res = await fetch(API + '/api/graph?period=' + currentRange);
-                const data = await res.json();
-                if (data.history) {
-                    graphData = data.history;
-                    graphStats = data.stats || {};
-                    updateGraphStats();
-                    drawChart();
-                }
-            } catch (e) { console.error('Graph fetch error:', e); }
-        }
+        async function fetchGraph() { try { const r = await fetch(API + '/api/graph?period=' + currentRange); const d = await r.json(); if (d.history) { graphData = d.history; drawChart(); } } catch (e) { } }
 
-        function updateGraphStats() {
-            document.getElementById('graphCur').textContent = graphStats.current?.toFixed(1) || '-';
-            document.getElementById('graphMin').textContent = graphStats.min?.toFixed(1) || '-';
-            document.getElementById('graphAvg').textContent = graphStats.avg?.toFixed(1) || '-';
-            document.getElementById('graphMax').textContent = graphStats.max?.toFixed(1) || '-';
-        }
+        function drawChart() { const c = document.getElementById('qpsChart'), ctx = c.getContext('2d'); const w = c.width = c.offsetWidth, h = c.height = c.offsetHeight; ctx.clearRect(0, 0, w, h); if (graphData.length < 2) return; const v = graphData.map(d => d.qps), mx = Math.max(...v, 1); const p = { t: 10, b: 25, l: 50, r: 10 }, gw = w - p.l - p.r, gh = h - p.t - p.b; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.fillStyle = '#64748b'; ctx.font = '11px system-ui'; ctx.textAlign = 'right'; for (let i = 0; i <= 4; i++) { const y = p.t + (gh * i / 4); ctx.beginPath(); ctx.moveTo(p.l, y); ctx.lineTo(w - p.r, y); ctx.stroke(); ctx.fillText(formatNumber(mx - mx * i / 4), p.l - 8, y + 4); } ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath(); const st = gw / (graphData.length - 1); graphData.forEach((d, i) => { const x = p.l + i * st, y = p.t + gh - (d.qps / mx) * gh; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }); ctx.stroke(); ctx.lineTo(p.l + gw, p.t + gh); ctx.lineTo(p.l, p.t + gh); const gr = ctx.createLinearGradient(0, p.t, 0, p.t + gh); gr.addColorStop(0, 'rgba(59,130,246,0.2)'); gr.addColorStop(1, 'rgba(59,130,246,0)'); ctx.fillStyle = gr; ctx.fill(); ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; for (let i = 0; i <= 4; i++) { const idx = Math.floor(i * (graphData.length - 1) / 4); if (graphData[idx]) { const x = p.l + idx * st, t = new Date(graphData[idx].time * 1000); ctx.fillText(t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }), x, h - 8); } } }
 
-        function drawChart() {
-            const canvas = document.getElementById('qpsChart');
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width = canvas.offsetWidth;
-            const h = canvas.height = canvas.offsetHeight;
+        function formatUptime(s) { if (s >= 86400) return `${Math.floor(s / 86400)}d ${Math.floor((s % 86400) / 3600)}h`; if (s >= 3600) return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`; return `${Math.floor(s / 60)}m`; }
+        function formatNumber(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return typeof n === 'number' ? n.toFixed(0) : n.toString(); }
 
-            ctx.clearRect(0, 0, w, h);
-            if (graphData.length < 2) return;
+        async function fetchInterfaces() { try { const r = await fetch(API + '/api/interfaces'); const d = await r.json(); const t = document.getElementById('interfaceTable'), s = document.getElementById('ifaceSelect'); t.innerHTML = ''; s.innerHTML = ''; d.interfaces.forEach(i => { t.innerHTML += `<tr><td style="color:var(--primary);font-weight:500;">${i.name}</td><td>${i.ipv4.join(', ') || '-'}</td><td style="color:${i.state === 'UP' ? 'var(--green)' : 'var(--red)'}"><strong>${i.state}</strong></td></tr>`; s.innerHTML += `<option>${i.name}</option>`; }); } catch (e) { } }
 
-            // Calculate scale
-            const qpsValues = graphData.map(d => d.qps);
-            const maxVal = Math.max(...qpsValues, 1);
-            const minVal = 0; // Always start from 0 for cleaner look
+        async function fetchAcl() { try { const r = await fetch(API + '/api/acl'); const d = await r.json(); const l = document.getElementById('aclList'); l.innerHTML = ''; d.acl.forEach(x => { l.innerHTML += `<div class="acl-item"><span>${x.network}</span><span class="badge badge-${x.action}">${x.action}</span></div>`; }); } catch (e) { } }
 
-            const padding = { top: 10, bottom: 20, left: 40, right: 10 };
-            const graphW = w - padding.left - padding.right;
-            const graphH = h - padding.top - padding.bottom;
+        async function fetchSinkhole() { try { const r = await fetch(API + '/api/sinkhole'); const d = await r.json(); document.getElementById('sinkholeIpv4').value = d.ipv4 || ''; document.getElementById('sinkholeIpv6').value = d.ipv6 || ''; } catch (e) { } }
+        async function saveSinkhole() { const r = await fetch(API + '/api/sinkhole', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ipv4: document.getElementById('sinkholeIpv4').value, ipv6: document.getElementById('sinkholeIpv6').value }) }); const d = await r.json(); showAlert(d.success ? 'Saved!' : d.error, d.success ? 'success' : 'error'); }
 
-            // Background
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.fillRect(padding.left, padding.top, graphW, graphH);
+        async function fetchForwarders() { try { const r = await fetch(API + '/api/forwarders'); const d = await r.json(); const l = document.getElementById('forwarderList'); l.innerHTML = d.forwarders?.length ? d.forwarders.map(f => `<div style="padding:8px 0;border-bottom:1px solid var(--border);">${f.name} → ${f.addrs.join(', ')}</div>`).join('') : '<span style="color:var(--text-dim);">No forwarders</span>'; } catch (e) { } }
+        async function addForwarder() { const i = document.getElementById('forwarderInput').value.trim(); if (!i) return; const p = i.split(',').map(x => x.trim()); if (p.length < 2) return showAlert('Format: domain,ip,...', 'error'); const r = await fetch(API + '/api/forwarders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: p[0], addrs: p.slice(1) }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('forwarderInput').value = ''; fetchForwarders(); } else showAlert(d.error, 'error'); }
 
-            // Grid lines and Y Labels
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 1;
-            ctx.fillStyle = '#666';
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'right';
+        async function fetchWhitelist() { try { const r = await fetch(API + '/api/whitelist'); const d = await r.json(); document.getElementById('whitelistInput').value = d.whitelist || ''; } catch (e) { } }
+        async function saveWhitelist() { const r = await fetch(API + '/api/whitelist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ whitelist: document.getElementById('whitelistInput').value }) }); const d = await r.json(); showAlert(d.success ? d.message : d.error, d.success ? 'success' : 'error'); }
 
-            for (let i = 0; i <= 4; i++) {
-                const y = padding.top + (graphH * i / 4);
-                ctx.beginPath();
-                ctx.moveTo(padding.left, y);
-                ctx.lineTo(w - padding.right, y);
-                ctx.stroke();
+        async function checkDomain() { const d = document.getElementById('checkDomainInput').value.trim(); const r = document.getElementById('checkResult'); if (!d) return; r.style.display = 'block'; r.textContent = '...'; try { const res = await fetch(API + '/api/check?domain=' + encodeURIComponent(d)); const data = await res.json(); r.textContent = data.status === 'blocked' ? '⛔ BLOCKED' : '✅ ALLOWED'; r.style.color = data.status === 'blocked' ? 'var(--red)' : 'var(--green)'; } catch (e) { r.textContent = 'Error'; } }
+        async function runDig() { const d = document.getElementById('digDomain').value.trim(); const t = document.getElementById('digType').value; const r = document.getElementById('digResult'); if (!d) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/dig?domain=' + encodeURIComponent(d) + '&type=' + t); const data = await res.json(); r.textContent = data.output || data.error; }
+        async function runPing() { const h = document.getElementById('pingHost').value.trim(); const r = document.getElementById('pingResult'); if (!h) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/ping?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error; }
+        async function runMtr() { const h = document.getElementById('mtrHost').value.trim(); const r = document.getElementById('mtrResult'); if (!h) return; r.style.display = 'block'; r.textContent = 'Running...'; const res = await fetch(API + '/api/mtr?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error; }
 
-                const val = maxVal - (maxVal - minVal) * i / 4;
-                ctx.fillText(formatNumber(val), padding.left - 5, y + 3);
-            }
-
-            // Draw QPS line
-            ctx.strokeStyle = '#00d9ff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-
-            const step = graphW / (graphData.length - 1);
-            graphData.forEach((d, i) => {
-                const x = padding.left + i * step;
-                const y = padding.top + graphH - ((d.qps - minVal) / (maxVal - minVal || 1)) * graphH;
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-
-            // Fill area
-            ctx.lineTo(padding.left + graphW, padding.top + graphH);
-            ctx.lineTo(padding.left, padding.top + graphH);
-            ctx.fillStyle = 'rgba(0,217,255,0.15)';
-            ctx.fill();
-
-            // X-axis time labels (simplified)
-            ctx.fillStyle = '#666';
-            ctx.textAlign = 'center';
-            const labelCount = 5;
-            for (let i = 0; i <= labelCount; i++) {
-                const idx = Math.floor(i * (graphData.length - 1) / labelCount);
-                if (graphData[idx]) {
-                    const x = padding.left + idx * step;
-                    const time = new Date(graphData[idx].time * 1000);
-
-                    let label;
-                    if (currentRange === '1h' || currentRange === '12h' || currentRange === '24h') {
-                        label = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-                    } else {
-                        label = time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    }
-                    ctx.fillText(label, x, h - 5);
-                }
-            }
-        }
-
-        function formatUptime(seconds) {
-            if (seconds >= 86400) {
-                const days = Math.floor(seconds / 86400);
-                const hours = Math.floor((seconds % 86400) / 3600);
-                return `${days}d ${hours}h`;
-            } else if (seconds >= 3600) {
-                const hours = Math.floor(seconds / 3600);
-                const mins = Math.floor((seconds % 3600) / 60);
-                return `${hours}h ${mins}m`;
-            } else {
-                return `${Math.floor(seconds / 60)}m`;
-            }
-        }
-
-        async function fetchInterfaces() {
-            try {
-                const res = await fetch(API + '/api/interfaces');
-                const data = await res.json();
-                const tbody = document.getElementById('interfaceTable');
-                const select = document.getElementById('ifaceSelect');
-                tbody.innerHTML = ''; select.innerHTML = '';
-
-                data.interfaces.forEach(iface => {
-                    const ipv4 = iface.addresses.filter(a => a.family === 'inet').map(a => `${a.ip}/${a.prefix}`).join('<br>') || '-';
-                    const ipv6 = iface.addresses.filter(a => a.family === 'inet6').map(a => `${a.ip}/${a.prefix}`).join('<br>') || '-';
-                    const stateClass = iface.state === 'UP' ? 'state-up' : 'state-down';
-                    tbody.innerHTML += `<tr>
-                        <td class="iface-name">${iface.name}</td>
-                        <td class="iface-ip ipv4">${ipv4}</td>
-                        <td class="iface-ip ipv6">${ipv6}</td>
-                        <td class="${stateClass}">${iface.state}</td>
-                    </tr>`;
-                    select.innerHTML += `<option value="${iface.name}">${iface.name}</option>`;
-                });
-            } catch (e) { console.error('Interface fetch error', e); }
-        }
-
-        async function fetchAcl() {
-            try {
-                const res = await fetch(API + '/api/acl');
-                const data = await res.json();
-                const list = document.getElementById('aclList');
-                list.innerHTML = '';
-                data.acl.forEach(rule => {
-                    list.innerHTML += `<div class="acl-row">
-                        <span class="acl-network">${rule.network}</span>
-                        <div class="acl-actions">
-                            <span class="badge badge-${rule.action}">${rule.action}</span>
-                            <button class="btn btn-danger btn-sm" onclick="removeAcl('${rule.network}')">✕</button>
-                        </div>
-                    </div>`;
-                });
-            } catch (e) { console.error('ACL fetch error', e); }
-        }
-
-        async function fetchSinkhole() {
-            try {
-                const res = await fetch(API + '/api/sinkhole');
-                const data = await res.json();
-                document.getElementById('sinkholeIpv4').value = data.ipv4 || '';
-                document.getElementById('sinkholeIpv6').value = data.ipv6 || '';
-            } catch (e) { console.error('Sinkhole fetch error', e); }
-        }
-
-        async function saveSinkhole() {
-            const ipv4 = document.getElementById('sinkholeIpv4').value;
-            const ipv6 = document.getElementById('sinkholeIpv6').value;
-            const res = await fetch(API + '/api/sinkhole', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ipv4, ipv6 })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showAlert('Sinkhole IP tersimpan! Reload untuk menerapkan.', 'success');
-            } else {
-                showAlert(data.error || 'Gagal menyimpan', 'error');
-            }
-        }
-
-        async function fetchForwarders() {
-            try {
-                const res = await fetch(API + '/api/forwarders');
-                const data = await res.json();
-                const list = document.getElementById('forwarderList');
-                if (!data.forwarders || data.forwarders.length === 0) {
-                    list.innerHTML = '<p style="color:#888;font-size:0.85rem;">Belum ada domain forwarder</p>';
-                    return;
-                }
-                let html = '<table style="width:100%;font-size:0.85rem;"><tbody>';
-                data.forwarders.forEach(fwd => {
-                    const resolvers = fwd.addrs.join(', ');
-                    html += `<tr>
-                        <td style="padding:5px 0;"><strong>${fwd.name}</strong><br><span style="color:#888;">${resolvers}</span></td>
-                        <td style="width:40px;text-align:right;">
-                            <button class="btn btn-danger" style="padding:3px 8px;" onclick="deleteForwarder('${fwd.name}')">🗑</button>
-                        </td>
-                    </tr>`;
-                });
-                html += '</tbody></table>';
-                list.innerHTML = html;
-            } catch (e) { console.error('Forwarders fetch error', e); }
-        }
-
-        async function addForwarder() {
-            const input = document.getElementById('forwarderInput').value.trim();
-            if (!input) {
-                showAlert('Masukkan domain dan resolver', 'error');
-                return;
-            }
-            const parts = input.split(',').map(p => p.trim());
-            if (parts.length < 2) {
-                showAlert('Format: domain,resolver1,resolver2,...', 'error');
-                return;
-            }
-            const name = parts[0];
-            const addrs = parts.slice(1);
-
-            const res = await fetch(API + '/api/forwarders', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, addrs })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showAlert(data.message + ' - Klik Reload untuk menerapkan.', 'success');
-                document.getElementById('forwarderInput').value = '';
-                fetchForwarders();
-            } else {
-                showAlert(data.error || 'Gagal menambah forwarder', 'error');
-            }
-        }
-
-        async function deleteForwarder(name) {
-            if (!confirm(`Hapus forwarder untuk ${name}?`)) return;
-            const res = await fetch(API + '/api/forwarder/delete', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showAlert(data.message + ' - Klik Reload untuk menerapkan.', 'success');
-                fetchForwarders();
-            } else {
-                showAlert(data.error || 'Gagal menghapus', 'error');
-            }
-        }
-
-        async function reload() {
-            const res = await fetch(API + '/api/reload', { method: 'POST' });
-            const data = await res.json();
-            showAlert(data.success ? 'Reloaded!' : data.error, data.success ? 'success' : 'error');
-        }
-
-        async function restart() {
-            if (!confirm('Restart Unbound?')) return;
-            const res = await fetch(API + '/api/restart', { method: 'POST' });
-            const data = await res.json();
-            showAlert(data.success ? 'Restarted!' : data.error, data.success ? 'success' : 'error');
-        }
-
-        async function addIp() {
-            const iface = document.getElementById('ifaceSelect').value;
-            const ip = document.getElementById('newIp').value;
-            const prefix = document.getElementById('newPrefix').value;
-            if (!ip) return showAlert('Enter IP address', 'error');
-            const res = await fetch(API + '/api/interface', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ interface: iface, ip, prefix: parseInt(prefix) })
-            });
-            const data = await res.json();
-            if (data.success) { showAlert('IP added!', 'success'); document.getElementById('newIp').value = ''; fetchInterfaces(); }
-            else showAlert(data.error, 'error');
-        }
-
-        async function addAcl() {
-            const network = document.getElementById('aclNetwork').value;
-            const acl_action = document.getElementById('aclAction').value;
-            if (!network) return showAlert('Enter network', 'error');
-            const res = await fetch(API + '/api/acl', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'add', network, acl_action })
-            });
-            const data = await res.json();
-            if (data.success) { showAlert('ACL added! Klik Reload untuk menerapkan.', 'success'); document.getElementById('aclNetwork').value = ''; fetchAcl(); }
-            else showAlert(data.error, 'error');
-        }
-
-        async function removeAcl(network) {
-            if (!confirm(`Remove ${network}?`)) return;
-            const res = await fetch(API + '/api/acl', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'remove', network })
-            });
-            const data = await res.json();
-            if (data.success) { showAlert('ACL removed! Klik Reload untuk menerapkan.', 'success'); fetchAcl(); }
-            else showAlert(data.error, 'error');
-        }
+        async function reload() { const r = await fetch(API + '/api/reload', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Reloaded!' : d.error, d.success ? 'success' : 'error'); }
+        async function restart() { if (!confirm('Restart?')) return; const r = await fetch(API + '/api/restart', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Restarted!' : d.error, d.success ? 'success' : 'error'); }
+        async function addIp() { const i = document.getElementById('ifaceSelect').value, ip = document.getElementById('newIp').value, p = document.getElementById('newPrefix').value; if (!ip) return; const r = await fetch(API + '/api/interface', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ interface: i, ip, prefix: parseInt(p) }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('newIp').value = ''; fetchInterfaces(); } else showAlert(d.error, 'error'); }
+        async function addAcl() { const n = document.getElementById('aclNetwork').value, a = document.getElementById('aclAction').value; if (!n) return; const r = await fetch(API + '/api/acl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', network: n, acl_action: a }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('aclNetwork').value = ''; fetchAcl(); } else showAlert(d.error, 'error'); }
 
         function logout() { window.location.href = '/api/logout'; }
         function showPasswordModal() { document.getElementById('passwordModal').classList.add('show'); }
         function hidePasswordModal() { document.getElementById('passwordModal').classList.remove('show'); }
-
-        async function changePassword() {
-            const current = document.getElementById('currentPass').value;
-            const newPass = document.getElementById('newPass').value;
-            const confirm = document.getElementById('confirmPass').value;
-            if (newPass !== confirm) return showAlert('Passwords do not match', 'error');
-            const res = await fetch(API + '/api/password', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ current, new: newPass })
-            });
-            const data = await res.json();
-            if (data.success) { showAlert('Password changed!', 'success'); hidePasswordModal(); }
-            else showAlert(data.error, 'error');
-        }
-
-        function showAlert(message, type) {
-            const alert = document.getElementById('alert');
-            alert.textContent = message;
-            alert.className = 'alert alert-' + type;
-            alert.style.display = 'block';
-            setTimeout(() => { alert.style.display = 'none'; }, 3000);
-        }
-
-        function formatNumber(num) {
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-            return typeof num === 'number' ? num.toFixed(1) : num.toString();
-        }
+        async function changePassword() { const c = document.getElementById('currentPass').value, n = document.getElementById('newPass').value, cf = document.getElementById('confirmPass').value; if (n !== cf) return showAlert('Mismatch', 'error'); const r = await fetch(API + '/api/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current: c, new: n }) }); const d = await r.json(); if (d.success) { showAlert('Changed!', 'success'); hidePasswordModal(); } else showAlert(d.error, 'error'); }
+        function showAlert(m, t) { const a = document.getElementById('alert'); a.textContent = m; a.className = 'alert alert-' + t; a.style.display = 'block'; setTimeout(() => a.style.display = 'none', 3000); }
     </script>
 </body>
 
