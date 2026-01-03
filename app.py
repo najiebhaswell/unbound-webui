@@ -603,6 +603,18 @@ async function login(e) {
             else:
                 qps = 0
             
+            # Count blocklist domains (estimate from binary db size)
+            blocklist_count = 0
+            db_file = "/etc/unbound/blocked_domains.db"
+            try:
+                if os.path.exists(db_file):
+                    # Binary db file: estimate ~40 bytes per domain entry
+                    file_size = os.path.getsize(db_file)
+                    if file_size > 80:  # Has data beyond header
+                        blocklist_count = (file_size - 80) // 40
+            except:
+                pass
+            
             self.send_json({
                 "qps": qps,
                 "total_queries": total_queries,
@@ -610,6 +622,7 @@ async function login(e) {
                 "cache_hits": stats.get("total.num.cachehits", 0),
                 "cache_miss": stats.get("total.num.cachemiss", 0),
                 "blocked": stats.get("num.query.blocklist", 0),
+                "blocklist_count": blocklist_count,
                 "timestamp": datetime.now().isoformat()
             })
         except Exception as e:

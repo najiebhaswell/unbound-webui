@@ -2,7 +2,7 @@ Package: unbound-webui
 Version: 1.0.10-1
 Architecture: all
 Maintainer: Najieb Haswell <najieb@haswell.my.id>
-Installed-Size: 97
+Installed-Size: 98
 Depends: python3
 Recommends: unbound | unbound-custom
 Section: net
