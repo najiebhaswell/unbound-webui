@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "configure" ]; then
+    # Create data directory
+    mkdir -p /opt/unbound-webui/data
+    
+    # Set permissions
+    chmod 755 /opt/unbound-webui
+    chmod 755 /opt/unbound-webui/app.py
+    
+    # Enable and start service
+    systemctl daemon-reload
+    systemctl enable unbound-webui.service || true
+    systemctl start unbound-webui.service || true
+    
+    echo ""
+    echo "============================================"
+    echo "  Unbound Web UI installed successfully!"
+    echo "============================================"
+    echo ""
+    echo "  Access: http://localhost:8888"
+    echo "  Login:  admin / admin"
+    echo ""
+    echo "  Change password after first login!"
+    echo "============================================"
+fi
+
+#DEBHELPER#

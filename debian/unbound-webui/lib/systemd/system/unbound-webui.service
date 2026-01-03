@@ -1,0 +1,14 @@
+[Unit]
+Description=Unbound Web UI
+After=network.target unbound.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/unbound-webui
+ExecStart=/usr/bin/python3 /opt/unbound-webui/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

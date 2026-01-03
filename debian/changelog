@@ -1,0 +1,39 @@
+unbound-webui (1.0.10-1) stable; urgency=medium
+
+  * Added Domain Forwarder feature (forward-zone management)
+  * Support format: domain,resolver1,resolver2,...
+  * Standard Unbound forward-zone format in config
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Wed, 01 Jan 2026 15:14:00 +0700
+
+unbound-webui (1.0.7-1) stable; urgency=medium
+
+  * Updated Lamanlabuh UI for multiple sinkhole IP support
+  * Comma-separated format for IPv4 and IPv6 sinkhole addresses
+  * Support blocklist-sinkhole-v6 config option
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Wed, 01 Jan 2026 15:08:00 +0700
+
+unbound-webui (1.0.6-1) stable; urgency=medium
+
+  * Added Lamanlabuh (Sinkhole) IP configuration UI
+  * Read/write blocklist-sinkhole from unbound.conf
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Wed, 01 Jan 2026 14:50:00 +0700
+
+unbound-webui (1.0.5-1) stable; urgency=medium
+
+  * Fix dependency - removed hard requirement on unbound package
+  * Works with unbound-custom builds
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Wed, 01 Jan 2026 07:35:00 +0700
+
+unbound-webui (1.0.0-1) stable; urgency=medium
+
+  * Initial release
+  * Web UI for Unbound DNS monitoring and management
+  * Features: QPS monitoring, interface config, ACL management
+  * Authentication with admin/admin default credentials
+  * IPv4 and IPv6 support
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Wed, 01 Jan 2026 07:30:00 +0700

@@ -1,0 +1,20 @@
+Source: unbound-webui
+Section: net
+Priority: optional
+Maintainer: Najieb Haswell <najieb@haswell.my.id>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 4.5.0
+
+Package: unbound-webui
+Architecture: all
+Depends: python3
+Recommends: unbound | unbound-custom
+Description: Web UI for Unbound DNS resolver
+ A lightweight web-based control panel for monitoring and
+ managing Unbound DNS resolver. Features include:
+  - Real-time QPS monitoring with graph
+  - Network interface IP configuration
+  - Access Control List (ACL) management
+  - Service reload/restart controls
+  - Authentication with password change support
+  - IPv4 and IPv6 support

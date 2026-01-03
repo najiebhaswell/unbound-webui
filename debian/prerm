@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    # Stop and disable service
+    systemctl stop unbound-webui.service || true
+    systemctl disable unbound-webui.service || true
+fi
+
+#DEBHELPER#
