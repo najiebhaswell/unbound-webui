@@ -603,15 +603,20 @@ async function login(e) {
             else:
                 qps = 0
             
-            # Count blocklist domains (estimate from binary db size)
+            # Count blocklist domains from log file
             blocklist_count = 0
-            db_file = "/etc/unbound/blocked_domains.db"
+            log_file = "/var/log/unbound/blocklist_update.log"
             try:
-                if os.path.exists(db_file):
-                    # Binary db file: estimate ~40 bytes per domain entry
-                    file_size = os.path.getsize(db_file)
-                    if file_size > 80:  # Has data beyond header
-                        blocklist_count = (file_size - 80) // 40
+                if os.path.exists(log_file):
+                    # Read last few lines to find "Domains: ... -> X (Filtered)"
+                    cmd = f"tail -n 20 {log_file} | grep 'Domains:' | tail -n 1"
+                    res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                    if res.stdout:
+                        # Format: "YYYY-MM-DD HH:MM:SS - Domains: X (Raw) -> Y (Filtered)"
+                        parts = res.stdout.strip().split("->")
+                        if len(parts) > 1:
+                            count_str = parts[1].split("(")[0].strip()
+                            blocklist_count = int(count_str)
             except:
                 pass
             

@@ -1,4 +1,4 @@
 e035268662f2758c3393aa9907ea7364  lib/systemd/system/unbound-webui.service
-ad0540326dabdfaeda43b1b59b9a2590  opt/unbound-webui/app.py
+e31fa9f74b3087560180b0bcd660729b  opt/unbound-webui/app.py
 97bad4ac8aede16c32c8c0f0cf4da40d  opt/unbound-webui/index.html
 b098614fe6634cd29172f29408ee5bc8  usr/share/doc/unbound-webui/changelog.Debian.gz
