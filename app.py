@@ -238,6 +238,11 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_login(body)
             return
         
+        # Allow forgot-password without auth
+        if path == "/api/forgot-password":
+            self.api_forgot_password(body)
+            return
+        
         # Check auth for all other API calls
         if not self.require_auth():
             self.send_json({"error": "Unauthorized"}, 401)
@@ -378,6 +383,60 @@ button:hover {
     color: var(--text-dim);
     font-size: 13px;
 }
+.forgot-link {
+    text-align: center;
+    margin-top: 16px;
+}
+.forgot-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+}
+.forgot-link a:hover { text-decoration: underline; }
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal.show { display: flex; }
+.modal-box {
+    background: var(--card);
+    padding: 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+}
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.modal-info {
+    background: #fef9c3;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #854d0e;
+    margin-bottom: 16px;
+}
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+.btn-row button { flex: 1; }
+.btn-gray {
+    background: #94a3b8;
+}
+.btn-gray:hover {
+    background: #64748b;
+}
 </style>
 </head><body>
 <div class="login-box">
@@ -392,7 +451,21 @@ button:hover {
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit">Sign In</button>
     </form>
+    <div class="forgot-link"><a onclick="showForgotModal()">Lupa Password?</a></div>
     <div class="footer">Protected DNS Management System</div>
+</div>
+<div id="forgotModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-title">Reset Password</div>
+        <div class="modal-info">Masukkan email yang terdaftar di Owner Profile untuk verifikasi identitas.</div>
+        <input type="email" id="verifyEmail" placeholder="Email terdaftar">
+        <input type="password" id="resetNewPass" placeholder="Password baru">
+        <input type="password" id="resetConfirmPass" placeholder="Konfirmasi password baru">
+        <div class="btn-row">
+            <button onclick="resetPassword()">Reset</button>
+            <button class="btn-gray" onclick="hideForgotModal()">Batal</button>
+        </div>
+    </div>
 </div>
 <script>
 async function login(e) {
@@ -415,6 +488,32 @@ async function login(e) {
     } catch (err) {
         document.getElementById('error').textContent = 'Connection error';
         document.getElementById('error').style.display = 'block';
+    }
+}
+function showForgotModal() { document.getElementById('forgotModal').classList.add('show'); }
+function hideForgotModal() { document.getElementById('forgotModal').classList.remove('show'); }
+async function resetPassword() {
+    const email = document.getElementById('verifyEmail').value;
+    const newPass = document.getElementById('resetNewPass').value;
+    const confirmPass = document.getElementById('resetConfirmPass').value;
+    if (!email) { alert('Masukkan email terdaftar'); return; }
+    if (newPass !== confirmPass) { alert('Password tidak cocok'); return; }
+    if (newPass.length < 4) { alert('Password minimal 4 karakter'); return; }
+    try {
+        const res = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, new_password: newPass})
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Password berhasil direset! Silakan login.');
+            hideForgotModal();
+        } else {
+            alert(data.error || 'Gagal reset password');
+        }
+    } catch (err) {
+        alert('Connection error');
     }
 }
 </script>
@@ -516,6 +615,41 @@ async function login(e) {
             
             save_config(config)
             self.send_json({"success": True, "message": "Profile updated"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+    
+    def api_forgot_password(self, body):
+        """Reset password with email verification"""
+        try:
+            data = json.loads(body)
+            email = data.get('email', '').strip().lower()
+            new_password = data.get('new_password', '')
+            
+            if not email:
+                self.send_json({"error": "Email wajib diisi"}, 400)
+                return
+            
+            if len(new_password) < 4:
+                self.send_json({"error": "Password minimal 4 karakter"}, 400)
+                return
+            
+            config = load_config()
+            owner_email = config.get('owner', {}).get('email', '').strip().lower()
+            
+            # Verify email matches owner profile
+            if not owner_email:
+                self.send_json({"error": "Owner profile belum diisi. Hubungi administrator."}, 400)
+                return
+            
+            if email != owner_email:
+                self.send_json({"error": "Email tidak cocok dengan data pemilik"}, 400)
+                return
+            
+            # Email verified, reset password
+            config['password_hash'] = hash_password(new_password)
+            save_config(config)
+            
+            self.send_json({"success": True, "message": "Password berhasil direset"})
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
     
