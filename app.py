@@ -732,6 +732,22 @@ async function resetPassword() {
             except:
                 pass
             
+            # Blocklist size from database header
+            blocklist_size = 0
+            try:
+                db_path = "/etc/unbound/blocked_domains.db"
+                if os.path.exists(db_path):
+                    import struct
+                    with open(db_path, "rb") as f:
+                        # Header: Magic(4s) + Version(I) + Count(Q)
+                        header = f.read(16)
+                        if len(header) == 16:
+                            magic, version, count = struct.unpack("<4sIQ", header)
+                            if magic == b"PROP":
+                                blocklist_size = count
+            except:
+                pass
+
             self.send_json({
                 "qps": qps,
                 "total_queries": total_queries,
@@ -739,6 +755,7 @@ async function resetPassword() {
                 "cache_hits": stats.get("total.num.cachehits", 0),
                 "cache_miss": stats.get("total.num.cachemiss", 0),
                 "blocked": stats.get("num.query.blocklist", 0),
+                "blocklist_size": blocklist_size,
                 "memory_used": round(memory_used, 1),
                 "memory_total": round(memory_total, 1),
                 "disk_used": round(disk_used, 1),
@@ -1283,18 +1300,9 @@ def main():
     collector.start()
     print("Started QPS history collector (10s intervals)")
     
-    # Create HTTPS server
+    # Create HTTP server
     server = http.server.HTTPServer(("0.0.0.0", PORT), UnboundHandler)
-    
-    # Wrap socket with SSL
-    if os.path.exists(SSL_CERT) and os.path.exists(SSL_KEY):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        context.load_cert_chain(SSL_CERT, SSL_KEY)
-        server.socket = context.wrap_socket(server.socket, server_side=True)
-        print(f"Starting Unbound Web UI on https://0.0.0.0:{PORT}")
-    else:
-        print(f"WARNING: SSL certificates not found, running HTTP only")
-        print(f"Starting Unbound Web UI on http://0.0.0.0:{PORT}")
+    print(f"Starting Unbound Web UI on http://0.0.0.0:{PORT}")
     
     print(f"Default login: admin / Pa5sW0rd")
     
