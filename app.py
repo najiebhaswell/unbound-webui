@@ -13,10 +13,13 @@ import secrets
 import subprocess
 import re
 import urllib.parse
+import ssl
 from datetime import datetime
 from http.cookies import SimpleCookie
 
-PORT = 8888
+PORT = 38888
+SSL_CERT = "/opt/unbound-webui/cert.pem"
+SSL_KEY = "/opt/unbound-webui/key.pem"
 UNBOUND_CONF = "/etc/unbound/unbound.conf"
 CONFIG_FILE = "/opt/unbound-webui/config.json"
 HISTORY_FILE = "/opt/unbound-webui/data/history.json"
@@ -204,6 +207,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_forwarders_get()
         elif path == "/api/system":
             self.api_system()
+        elif path.startswith("/api/dig"):
+            self.api_dig(parsed.query)
         elif path == "/api/logout":
             self.api_logout()
         else:
@@ -625,6 +630,40 @@ async function login(e) {
         except Exception as e:
             self.send_json({'error': str(e)}, 500)
     
+    def api_dig(self, query):
+        """Run dig command against local DNS server"""
+        try:
+            parsed = urllib.parse.parse_qs(query)
+            domain = parsed.get('domain', [''])[0].strip()
+            record_type = parsed.get('type', ['A'])[0].upper()
+            
+            if not domain:
+                self.send_json({'error': 'Domain is required'}, 400)
+                return
+            
+            # Validate domain
+            if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$', domain):
+                self.send_json({'error': 'Invalid domain format'}, 400)
+                return
+            
+            # Allowed record types
+            allowed_types = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME', 'SOA', 'PTR']
+            if record_type not in allowed_types:
+                record_type = 'A'
+            
+            # Run dig with @127.0.0.1
+            result = subprocess.run(
+                ['dig', '@127.0.0.1', domain, record_type, '+short'],
+                capture_output=True, text=True, timeout=10
+            )
+            
+            output = result.stdout.strip() or result.stderr.strip() or 'No results'
+            self.send_json({'output': output, 'domain': domain, 'type': record_type})
+        except subprocess.TimeoutExpired:
+            self.send_json({'error': 'Query timeout'}, 504)
+        except Exception as e:
+            self.send_json({'error': str(e)}, 500)
+    
     def api_status(self):
         try:
             service_name = get_service_name()
@@ -1019,19 +1058,53 @@ async function login(e) {
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
 
+def generate_self_signed_cert():
+    """Generate self-signed certificate if not exists"""
+    if os.path.exists(SSL_CERT) and os.path.exists(SSL_KEY):
+        return True
+    
+    try:
+        # Generate using openssl
+        subprocess.run([
+            'openssl', 'req', '-x509', '-newkey', 'rsa:2048',
+            '-keyout', SSL_KEY, '-out', SSL_CERT,
+            '-days', '365', '-nodes',
+            '-subj', '/CN=TrustPositif-DNS/O=WebUI/C=ID'
+        ], check=True, capture_output=True)
+        print(f"Generated self-signed certificate at {SSL_CERT}")
+        return True
+    except Exception as e:
+        print(f"Failed to generate certificate: {e}")
+        return False
+
 def main():
     # Initialize config
     load_config()
     load_history()
+    
+    # Generate SSL certificate if needed
+    generate_self_signed_cert()
     
     # Start background stats collector
     collector = threading.Thread(target=collect_stats, daemon=True)
     collector.start()
     print("Started QPS history collector (10s intervals)")
     
-    print(f"Starting Unbound Web UI on http://0.0.0.0:{PORT}")
-    print(f"Default login: admin / admin")
+    # Create HTTPS server
     server = http.server.HTTPServer(("0.0.0.0", PORT), UnboundHandler)
+    
+    # Wrap socket with SSL
+    if os.path.exists(SSL_CERT) and os.path.exists(SSL_KEY):
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(SSL_CERT, SSL_KEY)
+        server.socket = context.wrap_socket(server.socket, server_side=True)
+        print(f"Starting Unbound Web UI on https://0.0.0.0:{PORT}")
+    else:
+        print(f"WARNING: SSL certificates not found, running HTTP only")
+        print(f"Starting Unbound Web UI on http://0.0.0.0:{PORT}")
+    
+    print(f"Default login: admin / admin")
+    
     try:
         server.serve_forever()
     except KeyboardInterrupt:

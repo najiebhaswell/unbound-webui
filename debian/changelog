@@ -1,3 +1,14 @@
+unbound-webui (1.0.12-1) stable; urgency=medium
+
+  * HTTPS support with self-signed SSL certificate
+  * Changed default port to 38888 (5-digit)
+  * DNS Lookup (dig) now uses @127.0.0.1
+  * Light theme for login page matching dashboard
+  * Added /api/system endpoint for system stats
+  * Added /api/dig endpoint with local DNS query
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Sun, 05 Jan 2026 13:30:00 +0700
+
 unbound-webui (1.0.11-1) stable; urgency=medium
 
   * Update blocklist count logic and cleanup

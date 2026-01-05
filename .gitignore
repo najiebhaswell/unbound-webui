@@ -1,0 +1,8 @@
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/unbound-webui/
+debian/*.debhelper
+debian/*.substvars
+*.pyc
+__pycache__/
