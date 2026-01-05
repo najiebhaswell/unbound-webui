@@ -1112,5 +1112,47 @@ def main():
         save_history()
         server.shutdown()
 
+def reset_password(new_password):
+    """Reset admin password"""
+    import getpass
+    
+    if not new_password:
+        new_password = getpass.getpass("Enter new password: ")
+        confirm = getpass.getpass("Confirm password: ")
+        if new_password != confirm:
+            print("Passwords do not match!")
+            return False
+    
+    config = {"username": "admin", "password_hash": hashlib.sha256(new_password.encode()).hexdigest()}
+    
+    try:
+        os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f)
+        print(f"Password reset successfully!")
+        print(f"Please restart unbound-webui service: sudo systemctl restart unbound-webui")
+        return True
+    except Exception as e:
+        print(f"Failed to reset password: {e}")
+        return False
+
 if __name__ == "__main__":
-    main()
+    import sys
+    
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--reset-password":
+            new_pass = sys.argv[2] if len(sys.argv) > 2 else None
+            reset_password(new_pass)
+        elif sys.argv[1] == "--help" or sys.argv[1] == "-h":
+            print("Unbound WebUI Server")
+            print("")
+            print("Usage:")
+            print("  python3 app.py                  Start the server")
+            print("  python3 app.py --reset-password [PASSWORD]")
+            print("                                  Reset admin password")
+            print("  python3 app.py --help           Show this help")
+        else:
+            print(f"Unknown option: {sys.argv[1]}")
+            print("Use --help for usage information")
+    else:
+        main()
