@@ -217,6 +217,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_forwarders_get()
         elif path == "/api/system":
             self.api_system()
+        elif path.startswith("/api/check"):
+            self.api_check_blocklist(parsed.query)
         elif path.startswith("/api/dig"):
             self.api_dig(parsed.query)
         elif path == "/api/profile":
@@ -994,6 +996,55 @@ async function resetPassword() {
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
     
+    def api_check_blocklist(self, query):
+        """Check if domain is blocked using dig and sinkhole comparison"""
+        try:
+            params = urllib.parse.parse_qs(query)
+            domain = params.get('domain', [''])[0]
+            
+            if not domain:
+                self.send_json({"error": "Domain required"}, 400)
+                return
+            
+            # 1. Get Sinkhole IP from config
+            sinkhole_ip = "103.217.209.188" # Default fallback
+            try:
+                with open(UNBOUND_CONF, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("blocklist-sinkhole:") and not line.startswith("blocklist-sinkhole-v6"):
+                            # Extract IP
+                            sinkhole_ip = line.split('"')[1] if '"' in line else line.split(':')[1].strip()
+                            break
+            except:
+                pass
+
+            # 2. Dig the domain
+            cmd = ["dig", "@127.0.0.1", "+short", domain, "A"]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+            
+            # Proper parsing of dig output
+            output_ips = []
+            if result.returncode == 0 and result.stdout:
+                output_ips = [line.strip() for line in result.stdout.strip().splitlines() if line.strip()]
+
+            status = "unknown"
+            if not output_ips:
+                status = "error" # No answer or error from dig
+            elif sinkhole_ip in output_ips:
+                status = "blocked"
+            else:
+                status = "allowed"
+            
+            self.send_json({
+                "domain": domain,
+                "status": status,
+                "output": "\n".join(output_ips) if output_ips else "No answer from DNS",
+                "sinkhole": sinkhole_ip
+            })
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
     def api_forwarders_set(self, body):
         """Add or update a forward-zone"""
         try:
