@@ -457,6 +457,7 @@ button:hover {
 <div id="forgotModal" class="modal">
     <div class="modal-box">
         <div class="modal-title">Reset Password</div>
+        <div id="resetNotify" class="reset-notify" style="display:none;"></div>
         <div class="modal-info">Masukkan email yang terdaftar di Owner Profile untuk verifikasi identitas.</div>
         <input type="email" id="verifyEmail" placeholder="Email terdaftar">
         <input type="password" id="resetNewPass" placeholder="Password baru">
@@ -490,15 +491,26 @@ async function login(e) {
         document.getElementById('error').style.display = 'block';
     }
 }
-function showForgotModal() { document.getElementById('forgotModal').classList.add('show'); }
+function showForgotModal() { document.getElementById('forgotModal').classList.add('show'); document.getElementById('resetNotify').style.display='none'; }
 function hideForgotModal() { document.getElementById('forgotModal').classList.remove('show'); }
+function showResetNotify(msg, isSuccess) {
+    const el = document.getElementById('resetNotify');
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.background = isSuccess ? '#dcfce7' : '#fee2e2';
+    el.style.color = isSuccess ? '#166534' : '#dc2626';
+    el.style.padding = '12px';
+    el.style.borderRadius = '8px';
+    el.style.marginBottom = '12px';
+    el.style.fontSize = '14px';
+}
 async function resetPassword() {
     const email = document.getElementById('verifyEmail').value;
     const newPass = document.getElementById('resetNewPass').value;
     const confirmPass = document.getElementById('resetConfirmPass').value;
-    if (!email) { alert('Masukkan email terdaftar'); return; }
-    if (newPass !== confirmPass) { alert('Password tidak cocok'); return; }
-    if (newPass.length < 4) { alert('Password minimal 4 karakter'); return; }
+    if (!email) { showResetNotify('Masukkan email terdaftar', false); return; }
+    if (newPass !== confirmPass) { showResetNotify('Password tidak cocok', false); return; }
+    if (newPass.length < 4) { showResetNotify('Password minimal 4 karakter', false); return; }
     try {
         const res = await fetch('/api/forgot-password', {
             method: 'POST',
@@ -507,13 +519,13 @@ async function resetPassword() {
         });
         const data = await res.json();
         if (data.success) {
-            alert('Password berhasil direset! Silakan login.');
-            hideForgotModal();
+            showResetNotify('Password berhasil direset! Silakan login.', true);
+            setTimeout(() => { hideForgotModal(); }, 2000);
         } else {
-            alert(data.error || 'Gagal reset password');
+            showResetNotify(data.error || 'Gagal reset password', false);
         }
     } catch (err) {
-        alert('Connection error');
+        showResetNotify('Connection error', false);
     }
 }
 </script>
