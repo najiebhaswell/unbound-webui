@@ -132,12 +132,22 @@ def load_config():
     """Load config or create default"""
     default = {
         "username": "admin",
-        "password_hash": hashlib.sha256("Pa5sW0rd".encode()).hexdigest()
+        "password_hash": hashlib.sha256("Pa5sW0rd".encode()).hexdigest(),
+        "owner": {
+            "name": "",
+            "email": "",
+            "phone": "",
+            "organization": ""
+        }
     }
     try:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r') as f:
-                return json.load(f)
+                config = json.load(f)
+                # Ensure owner field exists for old configs
+                if 'owner' not in config:
+                    config['owner'] = default['owner']
+                return config
     except:
         pass
     save_config(default)
@@ -209,6 +219,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_system()
         elif path.startswith("/api/dig"):
             self.api_dig(parsed.query)
+        elif path == "/api/profile":
+            self.api_profile_get()
         elif path == "/api/logout":
             self.api_logout()
         else:
@@ -241,6 +253,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_control("restart")
         elif path == "/api/password":
             self.api_change_password(body)
+        elif path == "/api/profile":
+            self.api_profile_set(body)
         elif path == "/api/sinkhole":
             self.api_sinkhole_set(body)
         elif path == "/api/forwarders":
@@ -469,6 +483,39 @@ async function login(e) {
             save_config(config)
             
             self.send_json({"success": True, "message": "Password changed"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+    
+    def api_profile_get(self):
+        """Get owner profile"""
+        try:
+            config = load_config()
+            owner = config.get('owner', {
+                'name': '',
+                'email': '',
+                'phone': '',
+                'organization': ''
+            })
+            self.send_json(owner)
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+    
+    def api_profile_set(self, body):
+        """Update owner profile"""
+        try:
+            data = json.loads(body)
+            config = load_config()
+            
+            # Update owner info
+            config['owner'] = {
+                'name': data.get('name', '').strip()[:100],
+                'email': data.get('email', '').strip()[:100],
+                'phone': data.get('phone', '').strip()[:30],
+                'organization': data.get('organization', '').strip()[:100]
+            }
+            
+            save_config(config)
+            self.send_json({"success": True, "message": "Profile updated"})
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
     
