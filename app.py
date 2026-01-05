@@ -132,7 +132,7 @@ def load_config():
     """Load config or create default"""
     default = {
         "username": "admin",
-        "password_hash": hashlib.sha256("admin".encode()).hexdigest()
+        "password_hash": hashlib.sha256("Pa5sW0rd".encode()).hexdigest()
     }
     try:
         if os.path.exists(CONFIG_FILE):
@@ -1103,7 +1103,7 @@ def main():
         print(f"WARNING: SSL certificates not found, running HTTP only")
         print(f"Starting Unbound Web UI on http://0.0.0.0:{PORT}")
     
-    print(f"Default login: admin / admin")
+    print(f"Default login: admin / Pa5sW0rd")
     
     try:
         server.serve_forever()
