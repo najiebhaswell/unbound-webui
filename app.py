@@ -202,24 +202,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_sinkhole_get()
         elif path == "/api/forwarders":
             self.api_forwarders_get()
-        elif path == "/api/whitelist":
-            self.api_whitelist_get()
-        elif path == "/api/check":
-            domain = urllib.parse.parse_qs(parsed.query).get('domain', [''])[0]
-            self.api_check_blocklist(domain)
         elif path == "/api/system":
-            self.api_system_stats()
-        elif path == "/api/dig":
-            query = urllib.parse.parse_qs(parsed.query)
-            domain = query.get('domain', [''])[0]
-            qtype = query.get('type', ['A'])[0]
-            self.api_dig(domain, qtype)
-        elif path == "/api/ping":
-            host = urllib.parse.parse_qs(parsed.query).get('host', [''])[0]
-            self.api_ping(host)
-        elif path == "/api/mtr":
-            host = urllib.parse.parse_qs(parsed.query).get('host', [''])[0]
-            self.api_mtr(host)
+            self.api_system()
         elif path == "/api/logout":
             self.api_logout()
         else:
@@ -258,23 +242,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_forwarders_set(body)
         elif path == "/api/forwarder/delete":
             self.api_forwarder_delete(body)
-        elif path == "/api/whitelist":
-            self.api_whitelist_set(body)
         else:
             self.send_error(404)
-    
-    def send_json(self, data, status=200):
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-        self.wfile.write(json.dumps(data).encode())
-
-    # ... (skipping serve_login to serve_dashboard for brevity) ... 
-    
-    # Insert new methods before send_json if possible, or after. 
-    # Actually just add them to the class. Be careful with indentation.
-
     
     def send_json(self, data, status=200):
         self.send_response(status)
@@ -291,193 +260,120 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
 <title>Login - TrustPositif DNS</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+:root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-dim: #64748b;
+    --primary: #3b82f6;
+    --green: #22c55e;
 }
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(-45deg, #0a0a1a, #1a1a3e, #0d2137, #1a0a2e);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    color: #e4e4e4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-}
-.bg-shapes {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    overflow: hidden;
-    z-index: 0;
-}
-.bg-shapes::before, .bg-shapes::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.3;
-}
-.bg-shapes::before {
-    width: 400px; height: 400px;
-    background: linear-gradient(135deg, #00d9ff, #0066ff);
-    top: -100px; right: -100px;
-    animation: float 8s ease-in-out infinite;
-}
-.bg-shapes::after {
-    width: 300px; height: 300px;
-    background: linear-gradient(135deg, #ff00aa, #7700ff);
-    bottom: -50px; left: -50px;
-    animation: float 10s ease-in-out infinite reverse;
-}
-.login-container {
-    position: relative;
-    z-index: 1;
 }
 .login-box {
-    background: rgba(15, 25, 45, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 50px 40px;
-    border-radius: 24px;
-    border: 1px solid rgba(0, 217, 255, 0.2);
+    background: var(--card);
+    padding: 48px 40px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     width: 100%;
     max-width: 400px;
-    box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 100px rgba(0, 217, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .logo {
     text-align: center;
-    margin-bottom: 35px;
+    margin-bottom: 32px;
 }
-.logo-icon {
-    font-size: 3.5rem;
-    display: block;
-    margin-bottom: 15px;
-    filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
+.logo-icon { font-size: 48px; }
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 12px;
 }
-.logo h1 {
-    color: #fff;
-    font-size: 1.6rem;
+.logo-badge {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: -0.5px;
-}
-.logo h1 span {
-    background: linear-gradient(135deg, #00d9ff, #00ff88);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.logo p {
-    color: #667;
-    font-size: 0.85rem;
     margin-top: 8px;
-}
-.form-group {
-    position: relative;
-    margin-bottom: 20px;
-}
-.form-group label {
-    position: absolute;
-    left: 15px;
-    top: -8px;
-    background: rgba(15, 25, 45, 0.95);
-    padding: 0 8px;
-    font-size: 0.75rem;
-    color: #00d9ff;
-    border-radius: 4px;
 }
 input {
     width: 100%;
-    padding: 16px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.3);
-    color: #fff;
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 16px;
+    transition: all 0.2s;
 }
 input:focus {
     outline: none;
-    border-color: #00d9ff;
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
-    background: rgba(0, 0, 0, 0.5);
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
-input::placeholder {
-    color: #556;
-}
+input::placeholder { color: var(--text-dim); }
 button {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #00d9ff 0%, #00ff88 100%);
-    color: #000;
-    font-size: 1rem;
-    font-weight: 700;
+    border-radius: 10px;
+    background: var(--primary);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 10px;
+    transition: all 0.2s;
 }
 button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 30px rgba(0, 217, 255, 0.4);
-}
-button:active {
+    background: #2563eb;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
 }
 .error {
-    background: rgba(255, 68, 68, 0.15);
-    border: 1px solid rgba(255, 68, 68, 0.3);
-    color: #ff6b6b;
+    color: #ef4444;
     text-align: center;
+    margin-bottom: 16px;
     padding: 12px;
+    background: #fef2f2;
     border-radius: 8px;
-    margin-bottom: 20px;
+    font-size: 14px;
     display: none;
-    font-size: 0.9rem;
 }
 .footer {
     text-align: center;
-    margin-top: 30px;
-    color: #445;
-    font-size: 0.75rem;
+    margin-top: 24px;
+    color: var(--text-dim);
+    font-size: 13px;
 }
 </style>
 </head><body>
-<div class="bg-shapes"></div>
-<div class="login-container">
-    <div class="login-box">
-        <div class="logo">
-            <span class="logo-icon">🛡️</span>
-            <h1><span>TrustPositif</span> DNS</h1>
-            <p>Secure DNS Management System</p>
-        </div>
-        <div id="error" class="error"></div>
-        <form onsubmit="login(event)">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="Enter username" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="Enter password" required>
-            </div>
-            <button type="submit">🔐 Sign In</button>
-        </form>
-        <div class="footer">Protected DNS Infrastructure</div>
+<div class="login-box">
+    <div class="logo">
+        <div class="logo-icon">🛡️</div>
+        <div class="logo-text">TrustPositif DNS</div>
+        <div class="logo-badge">SECURE LOGIN</div>
     </div>
+    <div id="error" class="error"></div>
+    <form onsubmit="login(event)">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Sign In</button>
+    </form>
+    <div class="footer">Protected DNS Management System</div>
 </div>
 <script>
 async function login(e) {
@@ -603,19 +499,38 @@ async function login(e) {
             else:
                 qps = 0
             
-            # Count blocklist domains from database file header
-            # Format: "PROP" (4 bytes) + version (4 bytes) + count (8 bytes LE)
-            blocklist_count = 0
-            db_file = "/etc/unbound/blocked_domains.db"
+            # Get system stats
+            memory_used, memory_total = 0, 0
+            disk_used, disk_total = 0, 0
+            cpu_load = 0.0
+            
+            # Memory from /proc/meminfo
             try:
-                if os.path.exists(db_file):
-                    with open(db_file, 'rb') as f:
-                        magic = f.read(4)
-                        if magic == b'PROP':
-                            f.read(4)  # skip version
-                            count_bytes = f.read(8)
-                            if len(count_bytes) == 8:
-                                blocklist_count = int.from_bytes(count_bytes, 'little')
+                with open('/proc/meminfo', 'r') as f:
+                    meminfo = {}
+                    for line in f:
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            meminfo[parts[0].rstrip(':')] = int(parts[1])
+                    memory_total = meminfo.get('MemTotal', 0) / 1024 / 1024  # GB
+                    mem_available = meminfo.get('MemAvailable', meminfo.get('MemFree', 0))
+                    memory_used = (meminfo.get('MemTotal', 0) - mem_available) / 1024 / 1024  # GB
+            except:
+                pass
+            
+            # Disk usage
+            try:
+                stat = os.statvfs('/')
+                disk_total = (stat.f_blocks * stat.f_frsize) / 1024 / 1024 / 1024  # GB
+                disk_free = (stat.f_bfree * stat.f_frsize) / 1024 / 1024 / 1024  # GB
+                disk_used = disk_total - disk_free
+            except:
+                pass
+            
+            # CPU load from /proc/loadavg
+            try:
+                with open('/proc/loadavg', 'r') as f:
+                    cpu_load = float(f.read().split()[0])
             except:
                 pass
             
@@ -626,11 +541,89 @@ async function login(e) {
                 "cache_hits": stats.get("total.num.cachehits", 0),
                 "cache_miss": stats.get("total.num.cachemiss", 0),
                 "blocked": stats.get("num.query.blocklist", 0),
-                "blocklist_count": blocklist_count,
+                "memory_used": round(memory_used, 1),
+                "memory_total": round(memory_total, 1),
+                "disk_used": round(disk_used, 1),
+                "disk_total": round(disk_total, 1),
+                "cpu_load": round(cpu_load, 2),
                 "timestamp": datetime.now().isoformat()
             })
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
+    
+    def api_system(self):
+        """Return system stats: CPU, Memory, Disk, Network"""
+        try:
+            result = {}
+            
+            # CPU load from /proc/loadavg
+            try:
+                with open('/proc/loadavg', 'r') as f:
+                    parts = f.read().split()
+                    result['cpu'] = {
+                        'load1': float(parts[0]),
+                        'load5': float(parts[1]),
+                        'load15': float(parts[2])
+                    }
+            except:
+                result['cpu'] = {'load1': 0, 'load5': 0, 'load15': 0}
+            
+            # Memory from /proc/meminfo
+            try:
+                with open('/proc/meminfo', 'r') as f:
+                    meminfo = {}
+                    for line in f:
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            meminfo[parts[0].rstrip(':')] = int(parts[1])
+                    total_kb = meminfo.get('MemTotal', 0)
+                    available_kb = meminfo.get('MemAvailable', meminfo.get('MemFree', 0))
+                    used_kb = total_kb - available_kb
+                    result['memory'] = {
+                        'total_mb': total_kb / 1024,
+                        'used_mb': used_kb / 1024,
+                        'available_mb': available_kb / 1024
+                    }
+            except:
+                result['memory'] = {'total_mb': 0, 'used_mb': 0, 'available_mb': 0}
+            
+            # Disk usage from os.statvfs
+            try:
+                stat = os.statvfs('/')
+                total_bytes = stat.f_blocks * stat.f_frsize
+                free_bytes = stat.f_bfree * stat.f_frsize
+                used_bytes = total_bytes - free_bytes
+                result['disk'] = {
+                    'total_gb': total_bytes / 1024 / 1024 / 1024,
+                    'used_gb': used_bytes / 1024 / 1024 / 1024,
+                    'free_gb': free_bytes / 1024 / 1024 / 1024
+                }
+            except:
+                result['disk'] = {'total_gb': 0, 'used_gb': 0, 'free_gb': 0}
+            
+            # Network stats from /proc/net/dev
+            try:
+                rx_bytes = 0
+                tx_bytes = 0
+                with open('/proc/net/dev', 'r') as f:
+                    for line in f:
+                        if ':' in line and 'lo:' not in line:
+                            parts = line.split()
+                            # Format: iface: rx_bytes rx_packets ... tx_bytes tx_packets ...
+                            iface_data = line.split(':')[1].split()
+                            if len(iface_data) >= 9:
+                                rx_bytes += int(iface_data[0])
+                                tx_bytes += int(iface_data[8])
+                result['network'] = {
+                    'rx_mb': rx_bytes / 1024 / 1024,
+                    'tx_mb': tx_bytes / 1024 / 1024
+                }
+            except:
+                result['network'] = {'rx_mb': 0, 'tx_mb': 0}
+            
+            self.send_json(result)
+        except Exception as e:
+            self.send_json({'error': str(e)}, 500)
     
     def api_status(self):
         try:
@@ -1023,215 +1016,6 @@ async function login(e) {
                 "history": data,
                 "stats": stats
             })
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-
-    def api_whitelist_get(self):
-        """Get whitelist content"""
-        try:
-            content = ""
-            whitelist_file = "/etc/unbound/whitelist.txt"
-            if os.path.exists(whitelist_file):
-                with open(whitelist_file, 'r') as f:
-                    content = f.read()
-            self.send_json({"whitelist": content})
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-    def api_whitelist_set(self, body):
-        """Update whitelist"""
-        try:
-            data = json.loads(body)
-            content = data.get("whitelist", "")
-            whitelist_file = "/etc/unbound/whitelist.txt"
-            
-            with open(whitelist_file, 'w') as f:
-                f.write(content)
-                
-            # Trigger update script in filter_only mode
-            subprocess.Popen(
-                ["/etc/unbound/update_blocklist.sh", "filter_only"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            
-            self.send_json({"success": True, "message": "Whitelist saved. Database update triggered."})
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-    def api_check_blocklist(self, domain):
-        """Check if domain is blocked"""
-        try:
-            if not domain:
-                self.send_json({"error": "Domain required"}, 400)
-                return
-            
-            db_bin = "/usr/lib/unbound/create_db"
-            cmd = [db_bin, "--check", domain, "/etc/unbound/blocked_domains.db"]
-            
-            # Hack for testing environment: use the one we just built
-            if os.path.exists("/home/well/Documents/unbound-blocklist-autoreload/create_db"):
-                cmd[0] = "/home/well/Documents/unbound-blocklist-autoreload/create_db"
-            
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            status = "unknown"
-            if result.returncode == 0:
-                status = "blocked"
-            elif result.returncode == 1:
-                status = "allowed"
-            else:
-                status = "error"
-                
-            self.send_json({
-                "domain": domain,
-                "status": status,
-                "output": result.stdout.strip()
-            })
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-    def api_system_stats(self):
-        """Get system stats: CPU, Memory, Disk, Network"""
-        try:
-            # CPU Load (1, 5, 15 min averages)
-            with open('/proc/loadavg', 'r') as f:
-                loadavg = f.read().strip().split()
-                cpu_load = {
-                    "load1": float(loadavg[0]),
-                    "load5": float(loadavg[1]),
-                    "load15": float(loadavg[2])
-                }
-            
-            # Memory Usage
-            meminfo = {}
-            with open('/proc/meminfo', 'r') as f:
-                for line in f:
-                    parts = line.split(':')
-                    if len(parts) == 2:
-                        key = parts[0].strip()
-                        val = parts[1].strip().split()[0]  # Value in kB
-                        meminfo[key] = int(val)
-            
-            mem_total = meminfo.get('MemTotal', 0)
-            mem_available = meminfo.get('MemAvailable', meminfo.get('MemFree', 0))
-            mem_used = mem_total - mem_available
-            mem_percent = (mem_used / mem_total * 100) if mem_total > 0 else 0
-            
-            memory = {
-                "total_mb": round(mem_total / 1024, 1),
-                "used_mb": round(mem_used / 1024, 1),
-                "available_mb": round(mem_available / 1024, 1),
-                "percent": round(mem_percent, 1)
-            }
-            
-            # Disk Usage (root partition)
-            statvfs = os.statvfs('/')
-            disk_total = statvfs.f_frsize * statvfs.f_blocks
-            disk_free = statvfs.f_frsize * statvfs.f_bavail
-            disk_used = disk_total - disk_free
-            disk_percent = (disk_used / disk_total * 100) if disk_total > 0 else 0
-            
-            disk = {
-                "total_gb": round(disk_total / (1024**3), 1),
-                "used_gb": round(disk_used / (1024**3), 1),
-                "free_gb": round(disk_free / (1024**3), 1),
-                "percent": round(disk_percent, 1)
-            }
-            
-            # Network Traffic (all interfaces combined)
-            rx_bytes = 0
-            tx_bytes = 0
-            with open('/proc/net/dev', 'r') as f:
-                for line in f:
-                    if ':' in line:
-                        parts = line.split(':')
-                        iface = parts[0].strip()
-                        if iface != 'lo':  # Skip loopback
-                            stats = parts[1].split()
-                            rx_bytes += int(stats[0])
-                            tx_bytes += int(stats[8])
-            
-            network = {
-                "rx_mb": round(rx_bytes / (1024**2), 2),
-                "tx_mb": round(tx_bytes / (1024**2), 2),
-                "rx_gb": round(rx_bytes / (1024**3), 2),
-                "tx_gb": round(tx_bytes / (1024**3), 2)
-            }
-            
-            self.send_json({
-                "cpu": cpu_load,
-                "memory": memory,
-                "disk": disk,
-                "network": network
-            })
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-    def api_dig(self, domain, qtype):
-        """Run dig command"""
-        try:
-            if not domain:
-                self.send_json({"error": "Domain required"}, 400)
-                return
-            # Sanitize input
-            import re
-            if not re.match(r'^[a-zA-Z0-9.-]+$', domain):
-                self.send_json({"error": "Invalid domain"}, 400)
-                return
-            if qtype not in ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME', 'SOA']:
-                qtype = 'A'
-            
-            result = subprocess.run(
-                ['dig', '+short', domain, qtype],
-                capture_output=True, text=True, timeout=10
-            )
-            self.send_json({"output": result.stdout or result.stderr or "No result"})
-        except subprocess.TimeoutExpired:
-            self.send_json({"error": "Timeout"}, 500)
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-    def api_ping(self, host):
-        """Run ping command"""
-        try:
-            if not host:
-                self.send_json({"error": "Host required"}, 400)
-                return
-            import re
-            if not re.match(r'^[a-zA-Z0-9.-]+$', host):
-                self.send_json({"error": "Invalid host"}, 400)
-                return
-            
-            result = subprocess.run(
-                ['ping', '-c', '4', '-W', '2', host],
-                capture_output=True, text=True, timeout=15
-            )
-            self.send_json({"output": result.stdout or result.stderr})
-        except subprocess.TimeoutExpired:
-            self.send_json({"error": "Timeout"}, 500)
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-
-    def api_mtr(self, host):
-        """Run mtr command"""
-        try:
-            if not host:
-                self.send_json({"error": "Host required"}, 400)
-                return
-            import re
-            if not re.match(r'^[a-zA-Z0-9.-]+$', host):
-                self.send_json({"error": "Invalid host"}, 400)
-                return
-            
-            result = subprocess.run(
-                ['mtr', '-z', '-r', '-c', '3', host],
-                capture_output=True, text=True, timeout=30
-            )
-            self.send_json({"output": result.stdout or result.stderr})
-        except subprocess.TimeoutExpired:
-            self.send_json({"error": "Timeout"}, 500)
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
 
