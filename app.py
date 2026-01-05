@@ -219,6 +219,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_system()
         elif path.startswith("/api/check"):
             self.api_check_blocklist(parsed.query)
+        elif path.startswith("/api/search-domains"):
+            self.api_search_domains(parsed.query)
         elif path.startswith("/api/dig"):
             self.api_dig(parsed.query)
         elif path == "/api/profile":
@@ -1044,6 +1046,66 @@ async function resetPassword() {
             })
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
+    
+    def api_search_domains(self, query):
+        """Search blocked domains from .domains file with wildcard support"""
+        try:
+            params = urllib.parse.parse_qs(query)
+            keyword = params.get('keyword', [''])[0].strip().lower()
+            limit = min(int(params.get('limit', ['100'])[0]), 500)  # Max 500 results
+            
+            if not keyword or len(keyword) < 2:
+                self.send_json({"error": "Keyword minimal 2 karakter"}, 400)
+                return
+            
+            domains_file = "/etc/unbound/blocked_domains.domains"
+            if not os.path.exists(domains_file):
+                self.send_json({"error": "File domains tidak ditemukan. Jalankan sync terlebih dahulu."}, 404)
+                return
+            
+            results = []
+            total_count = 0
+            
+            # Convert wildcard pattern to simple matching
+            # * at start = endswith, * at end = startswith, * both = contains
+            search_start = keyword.startswith('*')
+            search_end = keyword.endswith('*')
+            clean_keyword = keyword.strip('*')
+            
+            with open(domains_file, 'r') as f:
+                for line in f:
+                    domain = line.strip().lower()
+                    if not domain:
+                        continue
+                    total_count += 1
+                    
+                    matched = False
+                    if search_start and search_end:
+                        # *keyword* = contains
+                        matched = clean_keyword in domain
+                    elif search_start:
+                        # *keyword = endswith
+                        matched = domain.endswith(clean_keyword)
+                    elif search_end:
+                        # keyword* = startswith
+                        matched = domain.startswith(clean_keyword)
+                    else:
+                        # exact contains
+                        matched = clean_keyword in domain
+                    
+                    if matched and len(results) < limit:
+                        results.append(domain)
+            
+            self.send_json({
+                "keyword": keyword,
+                "results": results,
+                "count": len(results),
+                "total_domains": total_count,
+                "limit": limit
+            })
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
 
     def api_forwarders_set(self, body):
         """Add or update a forward-zone"""
