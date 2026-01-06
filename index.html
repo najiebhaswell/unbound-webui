@@ -873,7 +873,7 @@
         const API = ''; let graphData = [], currentRange = '24h', lastNetStats = null, lastNetTime = null;
         const titles = { dashboard: 'Dashboard', network: 'Settings', config: 'Filters', tools: 'Tools', account: 'Account' };
 
-        function showPage(p) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); document.getElementById('page-' + p).classList.add('active'); event.target.classList.add('active'); }
+        function showPage(p) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); document.getElementById('page-' + p).classList.add('active'); event.target.classList.add('active'); if (p === 'dashboard') { fetchStats(); fetchGraph(); fetchSystemStats(); } }
 
         document.addEventListener('DOMContentLoaded', () => { fetchAll(); setInterval(fetchStats, 5000); setInterval(fetchGraph, 10000); setInterval(fetchSystemStats, 5000); });
         async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchCustomBlock(), fetchWhitelist(), fetchGraph(), fetchSystemStats(), loadProfile()]); fetchIfaceConfigs(); }
