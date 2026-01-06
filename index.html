@@ -630,19 +630,7 @@
                 <div class="card">
                     <div class="card-header"><span class="card-title">Network Interfaces</span></div>
                     <div class="card-body">
-                        <div class="scroll-box">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Interface</th>
-                                        <th>IPv4</th>
-                                        <th>State</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="interfaceTable"></tbody>
-                            </table>
-                        </div>
-                        <div style="margin-top:20px;">
+                        <div style="margin-top:0;">
                             <div class="form-label">Configure Interface</div>
                             <div class="form-row" style="margin-bottom:10px;">
                                 <select id="ifaceSelect" onchange="loadIfaceConfig()" style="flex:1;margin:0;"></select>
@@ -890,7 +878,7 @@
         function formatUptime(s) { if (s >= 86400) return `${Math.floor(s / 86400)}d ${Math.floor((s % 86400) / 3600)}h`; if (s >= 3600) return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`; return `${Math.floor(s / 60)}m`; }
         function formatNumber(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return typeof n === 'number' ? n.toFixed(0) : n.toString(); }
 
-        async function fetchInterfaces() { try { const r = await fetch(API + '/api/interfaces'); const d = await r.json(); const t = document.getElementById('interfaceTable'), s = document.getElementById('ifaceSelect'); t.innerHTML = ''; s.innerHTML = ''; d.interfaces.forEach(i => { const ipv4 = i.addresses ? i.addresses.filter(a => a.family === 'inet').map(a => a.ip) : (i.ipv4 || []); t.innerHTML += `<tr><td style="color:var(--primary);font-weight:500;">${i.name}</td><td>${ipv4.join(', ') || '-'}</td><td style="color:${i.state === 'UP' ? 'var(--green)' : 'var(--red)'}"><strong>${i.state}</strong></td></tr>`; s.innerHTML += `<option>${i.name}</option>`; }); } catch (e) { } }
+        async function fetchInterfaces() { try { const r = await fetch(API + '/api/interfaces'); const d = await r.json(); const s = document.getElementById('ifaceSelect'); s.innerHTML = ''; d.interfaces.forEach(i => { s.innerHTML += `<option>${i.name}</option>`; }); } catch (e) { } }
 
         async function fetchAcl() { try { const r = await fetch(API + '/api/acl'); const d = await r.json(); const l = document.getElementById('aclList'); l.innerHTML = ''; d.acl.forEach(x => { l.innerHTML += `<div class="acl-item"><span>${x.network}</span><span class="badge badge-${x.action}">${x.action}</span></div>`; }); } catch (e) { } }
 
