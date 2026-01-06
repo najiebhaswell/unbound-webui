@@ -950,17 +950,15 @@
                 document.getElementById('modeStatic').checked = cfg.mode === 'static';
                 document.getElementById('staticIp').value = cfg.ip || '';
                 document.getElementById('staticGateway').value = cfg.gateway || '';
-                if (cfg.netmask) {
-                    const sel = document.getElementById('staticNetmask');
-                    for (let i = 0; i < sel.options.length; i++) {
-                        if (sel.options[i].value === cfg.netmask) { sel.selectedIndex = i; break; }
-                    }
-                }
+                document.getElementById('staticIp6').value = cfg.ip6 || '';
+                document.getElementById('staticGateway6').value = cfg.gateway6 || '';
             } else {
                 document.getElementById('modeDhcp').checked = true;
                 document.getElementById('modeStatic').checked = false;
                 document.getElementById('staticIp').value = '';
                 document.getElementById('staticGateway').value = '';
+                document.getElementById('staticIp6').value = '';
+                document.getElementById('staticGateway6').value = '';
             }
             toggleIfaceMode();
         }

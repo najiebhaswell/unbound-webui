@@ -1391,20 +1391,31 @@ async function resetPassword() {
                     content = f.read()
                 
                 current_iface = None
+                current_proto = None  # 'inet' or 'inet6'
                 for line in content.splitlines():
                     line = line.strip()
                     if line.startswith("iface "):
                         parts = line.split()
                         if len(parts) >= 4:
                             current_iface = parts[1]
+                            current_proto = parts[2]  # 'inet' or 'inet6'
                             mode = "dhcp" if "dhcp" in parts else "static"
-                            configs[current_iface] = {"mode": mode, "ip": "", "netmask": "", "gateway": ""}
+                            if current_iface not in configs:
+                                configs[current_iface] = {"mode": mode, "ip": "", "gateway": "", "ip6": "", "gateway6": ""}
+                            if current_proto == "inet":
+                                configs[current_iface]["mode"] = mode
                     elif current_iface and line.startswith("address "):
-                        configs[current_iface]["ip"] = line.split()[1] if len(line.split()) > 1 else ""
-                    elif current_iface and line.startswith("netmask "):
-                        configs[current_iface]["netmask"] = line.split()[1] if len(line.split()) > 1 else ""
+                        addr = line.split()[1] if len(line.split()) > 1 else ""
+                        if current_proto == "inet6":
+                            configs[current_iface]["ip6"] = addr
+                        else:
+                            configs[current_iface]["ip"] = addr
                     elif current_iface and line.startswith("gateway "):
-                        configs[current_iface]["gateway"] = line.split()[1] if len(line.split()) > 1 else ""
+                        gw = line.split()[1] if len(line.split()) > 1 else ""
+                        if current_proto == "inet6":
+                            configs[current_iface]["gateway6"] = gw
+                        else:
+                            configs[current_iface]["gateway"] = gw
             
             self.send_json({"available": available, "configs": configs})
         except Exception as e:
