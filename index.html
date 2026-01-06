@@ -74,6 +74,26 @@
             margin-left: 12px;
         }
 
+        .badge-allow {
+            background: var(--green);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-deny {
+            background: var(--red);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
         .header-right {
             display: flex;
             align-items: center;
@@ -174,6 +194,11 @@
             background: var(--bg);
             color: var(--text);
             border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: var(--red);
+            color: white;
         }
 
         .btn-action:hover {
@@ -532,7 +557,7 @@
             <div class="page-header">
                 <span class="page-title">Dashboard</span>
                 <button class="btn-action btn-primary" onclick="reload()">🔄 Reload</button>
-                <button class="btn-action btn-secondary" onclick="restart()">⚡ Restart</button>
+                <button class="btn-action btn-danger" onclick="restart()">⚡ Restart</button>
             </div>
 
             <div class="stats-grid">
@@ -618,13 +643,39 @@
                             </table>
                         </div>
                         <div style="margin-top:20px;">
-                            <div class="form-label">Add IP</div>
-                            <div class="form-row">
-                                <select id="ifaceSelect" style="flex:1;margin:0;"></select>
-                                <input id="newIp" placeholder="IP Address" style="flex:2;margin:0;">
-                                <input id="newPrefix" value="24" style="width:60px;margin:0;">
-                                <button class="btn btn-blue" onclick="addIp()">Add</button>
+                            <div class="form-label">Configure Interface</div>
+                            <div class="form-row" style="margin-bottom:10px;">
+                                <select id="ifaceSelect" onchange="loadIfaceConfig()" style="flex:1;margin:0;"></select>
+                                <label style="display:flex;align-items:center;gap:6px;margin-left:16px;">
+                                    <input type="radio" name="ifaceMode" value="dhcp" id="modeDhcp"
+                                        onchange="toggleIfaceMode()" checked> DHCP
+                                </label>
+                                <label style="display:flex;align-items:center;gap:6px;">
+                                    <input type="radio" name="ifaceMode" value="static" id="modeStatic"
+                                        onchange="toggleIfaceMode()"> Static
+                                </label>
                             </div>
+                            <div id="staticFields" style="display:none;">
+                                <div class="form-row" style="margin-bottom:8px;">
+                                    <input id="staticIp" placeholder="IPv4/Prefix (e.g. 192.168.1.100/24)"
+                                        style="flex:2;margin:0;">
+                                </div>
+                                <div class="form-row" style="margin-bottom:8px;">
+                                    <input id="staticGateway" placeholder="IPv4 Gateway (e.g. 192.168.1.1)"
+                                        style="flex:2;margin:0;">
+                                </div>
+                                <div class="form-row" style="margin-bottom:8px;">
+                                    <input id="staticIp6" placeholder="IPv6/Prefix (e.g. 2001:db8::1/64) - optional"
+                                        style="flex:2;margin:0;">
+                                </div>
+                                <div class="form-row" style="margin-bottom:8px;">
+                                    <input id="staticGateway6"
+                                        placeholder="IPv6 Gateway (e.g. 2001:db8::ffff) - optional"
+                                        style="flex:2;margin:0;">
+                                </div>
+                            </div>
+                            <button class="btn btn-blue" onclick="applyIfaceConfig()"
+                                style="width:100%;margin-top:8px;">Apply Configuration</button>
                         </div>
                     </div>
                 </div>
@@ -653,7 +704,7 @@
             <div class="page-header">
                 <span class="page-title">Filters</span>
             </div>
-            <div class="grid-3">
+            <div class="grid-2">
                 <div class="card">
                     <div class="card-header"><span class="card-title">Sinkhole IP</span></div>
                     <div class="card-body">
@@ -667,16 +718,39 @@
                 <div class="card">
                     <div class="card-header"><span class="card-title">Forwarders</span></div>
                     <div class="card-body">
-                        <div class="scroll-box" id="forwarderList" style="max-height:80px;margin-bottom:12px;"></div>
-                        <textarea id="forwarderInput" rows="2" placeholder="domain,ip1,ip2"></textarea>
-                        <button class="btn btn-blue" onclick="addForwarder()" style="width:100%;">Add</button>
+                        <div class="scroll-box" id="forwarderList"
+                            style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:6px;padding:8px;">
+                        </div>
+                        <div class="form-row">
+                            <input id="forwarderInput" placeholder="domain,ip" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="addForwarder()">Add</button>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-header"><span class="card-title">Whitelist</span></div>
+                    <div class="card-header"><span class="card-title">Custom Blocklist</span> <span
+                            class="badge badge-deny">Block</span></div>
                     <div class="card-body">
-                        <textarea id="whitelistInput" rows="4" placeholder="google.com"></textarea>
-                        <button class="btn btn-blue" onclick="saveWhitelist()" style="width:100%;">Save</button>
+                        <div class="scroll-box" id="customBlockList"
+                            style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:6px;padding:8px;">
+                        </div>
+                        <div class="form-row">
+                            <input id="customBlockInput" placeholder="domain.com" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="addCustomBlock()">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Whitelist</span> <span
+                            class="badge badge-allow">Allow</span></div>
+                    <div class="card-body">
+                        <div class="scroll-box" id="whitelistList"
+                            style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:6px;padding:8px;">
+                        </div>
+                        <div class="form-row">
+                            <input id="whitelistInputNew" placeholder="domain.com" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="addWhitelist()">Add</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -689,16 +763,20 @@
             </div>
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">Check Domain</span></div>
+                    <div class="card-header"><span class="card-title">Search Blocklist</span></div>
                     <div class="card-body">
                         <div class="form-row">
-                            <input id="checkDomainInput" placeholder="example.com" style="flex:1;margin:0;">
-                            <button class="btn btn-blue" onclick="checkDomain()">Check</button>
+                            <input id="searchKeyword" placeholder="xxx or *porn* or gambling*" style="flex:1;margin:0;">
+                            <button class="btn btn-blue" onclick="searchDomains()">Search</button>
                         </div>
-                        <div id="checkResult" style="margin-top:16px;font-size:18px;font-weight:600;display:none;">
+                        <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">
+                            Wildcard: *keyword* (contains), keyword* (starts), *keyword (ends)
                         </div>
+                        <div id="searchInfo" style="margin-top:12px;font-size:13px;display:none;"></div>
+                        <pre id="searchResult" class="result-box" style="max-height:300px;"></pre>
                     </div>
                 </div>
+
                 <div class="card">
                     <div class="card-header"><span class="card-title">DNS Lookup</span></div>
                     <div class="card-body">
@@ -798,7 +876,7 @@
         function showPage(p) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); document.getElementById('page-' + p).classList.add('active'); event.target.classList.add('active'); }
 
         document.addEventListener('DOMContentLoaded', () => { fetchAll(); setInterval(fetchStats, 5000); setInterval(fetchGraph, 10000); setInterval(fetchSystemStats, 5000); });
-        async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchGraph(), fetchSystemStats(), fetchWhitelist(), loadProfile()]); }
+        async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchCustomBlock(), fetchWhitelist(), fetchGraph(), fetchSystemStats(), loadProfile()]); fetchIfaceConfigs(); }
         function setRange(r) { currentRange = r; document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('active', b.dataset.range === r)); fetchGraph(); }
 
         async function fetchStats() { try { const r = await fetch(API + '/api/stats'); if (r.status === 401) { window.location.href = '/login'; return; } const d = await r.json(); document.getElementById('totalQueries').textContent = formatNumber(d.total_queries); document.getElementById('cacheHits').textContent = formatNumber(d.cache_hits); document.getElementById('uptime').textContent = formatUptime(d.uptime); document.getElementById('qps').textContent = d.qps.toFixed(1); if (d.blocklist_size !== undefined) document.getElementById('blocklistCount').textContent = (d.blocklist_size || 0).toLocaleString(); document.getElementById('statusBadge').textContent = 'ONLINE'; document.getElementById('statusBadge').style.background = 'var(--green)'; } catch (e) { document.getElementById('statusBadge').textContent = 'OFFLINE'; document.getElementById('statusBadge').style.background = 'var(--red)'; } }
@@ -822,17 +900,106 @@
         async function fetchForwarders() { try { const r = await fetch(API + '/api/forwarders'); const d = await r.json(); const l = document.getElementById('forwarderList'); l.innerHTML = d.forwarders?.length ? d.forwarders.map(f => `<div style="padding:8px 0;border-bottom:1px solid var(--border);">${f.name} → ${f.addrs.join(', ')}</div>`).join('') : '<span style="color:var(--text-dim);">No forwarders</span>'; } catch (e) { } }
         async function addForwarder() { const i = document.getElementById('forwarderInput').value.trim(); if (!i) return; const p = i.split(',').map(x => x.trim()); if (p.length < 2) return showAlert('Format: domain,ip,...', 'error'); const r = await fetch(API + '/api/forwarders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: p[0], addrs: p.slice(1) }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('forwarderInput').value = ''; fetchForwarders(); } else showAlert(d.error, 'error'); }
 
-        async function fetchWhitelist() { try { const r = await fetch(API + '/api/whitelist'); const d = await r.json(); document.getElementById('whitelistInput').value = d.whitelist || ''; } catch (e) { } }
-        async function saveWhitelist() { const r = await fetch(API + '/api/whitelist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ whitelist: document.getElementById('whitelistInput').value }) }); const d = await r.json(); showAlert(d.success ? d.message : d.error, d.success ? 'success' : 'error'); }
+        async function fetchCustomBlock() { try { const r = await fetch(API + '/api/custom-blocklist'); const d = await r.json(); const l = document.getElementById('customBlockList'); l.innerHTML = d.domains?.length ? d.domains.map(x => `<div class="list-item" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;"><span>${x}</span><a onclick="delCustomBlock('${x}')" style="cursor:pointer;color:var(--red);">×</a></div>`).join('') : '<span style="color:var(--text-dim);">Empty</span>'; } catch (e) { } }
+        async function addCustomBlock() { const i = document.getElementById('customBlockInput'); const d = i.value.trim(); if (!d) return; const r = await fetch(API + '/api/custom-blocklist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { i.value = ''; fetchCustomBlock(); showAlert('Added!', 'success'); } else showAlert(res.error, 'error'); }
+        async function delCustomBlock(d) { if (!confirm('Remove ' + d + '?')) return; const r = await fetch(API + '/api/custom-blocklist/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { fetchCustomBlock(); showAlert('Removed!', 'success'); } else showAlert(res.error, 'error'); }
 
-        async function checkDomain() { const d = document.getElementById('checkDomainInput').value.trim(); const r = document.getElementById('checkResult'); if (!d) return; r.style.display = 'block'; r.textContent = '...'; try { const res = await fetch(API + '/api/check?domain=' + encodeURIComponent(d)); const data = await res.json(); r.textContent = data.status === 'blocked' ? '⛔ BLOCKED' : '✅ ALLOWED'; r.style.color = data.status === 'blocked' ? 'var(--red)' : 'var(--green)'; } catch (e) { r.textContent = 'Error'; } }
+        async function fetchWhitelist() { try { const r = await fetch(API + '/api/whitelist'); const d = await r.json(); const l = document.getElementById('whitelistList'); l.innerHTML = d.domains?.length ? d.domains.map(x => `<div class="list-item" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;"><span>${x}</span><a onclick="delWhitelist('${x}')" style="cursor:pointer;color:var(--red);">×</a></div>`).join('') : '<span style="color:var(--text-dim);">Empty</span>'; } catch (e) { } }
+        async function addWhitelist() { const i = document.getElementById('whitelistInputNew'); const d = i.value.trim(); if (!d) return; const r = await fetch(API + '/api/whitelist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { i.value = ''; fetchWhitelist(); showAlert('Added!', 'success'); } else showAlert(res.error, 'error'); }
+        async function delWhitelist(d) { if (!confirm('Remove ' + d + '?')) return; const r = await fetch(API + '/api/whitelist/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { fetchWhitelist(); showAlert('Removed!', 'success'); } else showAlert(res.error, 'error'); }
+
+
+        async function searchDomains() {
+            const keyword = document.getElementById('searchKeyword').value.trim();
+            const info = document.getElementById('searchInfo');
+            const result = document.getElementById('searchResult');
+            if (!keyword || keyword.length < 2) { showAlert('Keyword minimal 2 karakter', 'error'); return; }
+            info.style.display = 'block'; info.textContent = 'Searching...';
+            result.style.display = 'none';
+            try {
+                const res = await fetch(API + '/api/search-domains?keyword=' + encodeURIComponent(keyword) + '&limit=100');
+                const data = await res.json();
+                if (data.error) { info.innerHTML = '<span style="color:var(--red)">' + data.error + '</span>'; return; }
+                info.innerHTML = 'Found <strong>' + data.count + '</strong> results (from ' + formatNumber(data.total_domains) + ' domains)';
+                if (data.results && data.results.length > 0) {
+                    result.style.display = 'block';
+                    result.textContent = data.results.join('\n');
+                }
+            } catch (e) { info.innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>'; }
+        }
         async function runDig() { const d = document.getElementById('digDomain').value.trim(); const t = document.getElementById('digType').value; const r = document.getElementById('digResult'); if (!d) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/dig?domain=' + encodeURIComponent(d) + '&type=' + t); const data = await res.json(); r.textContent = data.output || data.error; }
         async function runPing() { const h = document.getElementById('pingHost').value.trim(); const r = document.getElementById('pingResult'); if (!h) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/ping?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error; }
         async function runMtr() { const h = document.getElementById('mtrHost').value.trim(); const r = document.getElementById('mtrResult'); if (!h) return; r.style.display = 'block'; r.textContent = 'Running...'; const res = await fetch(API + '/api/mtr?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error; }
 
         async function reload() { const r = await fetch(API + '/api/reload', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Reloaded!' : d.error, d.success ? 'success' : 'error'); }
         async function restart() { if (!confirm('Restart?')) return; const r = await fetch(API + '/api/restart', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Restarted!' : d.error, d.success ? 'success' : 'error'); }
-        async function addIp() { const i = document.getElementById('ifaceSelect').value, ip = document.getElementById('newIp').value, p = document.getElementById('newPrefix').value; if (!ip) return; const r = await fetch(API + '/api/interface', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ interface: i, ip, prefix: parseInt(p) }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('newIp').value = ''; fetchInterfaces(); } else showAlert(d.error, 'error'); }
+        async function addIp() { /* Legacy - replaced by applyIfaceConfig */ }
+
+        let ifaceConfigs = {};
+        function toggleIfaceMode() {
+            const isStatic = document.getElementById('modeStatic').checked;
+            document.getElementById('staticFields').style.display = isStatic ? 'block' : 'none';
+        }
+
+        async function loadIfaceConfig() {
+            const iface = document.getElementById('ifaceSelect').value;
+            if (!iface) return;
+            const cfg = ifaceConfigs[iface];
+            if (cfg) {
+                document.getElementById('modeDhcp').checked = cfg.mode === 'dhcp';
+                document.getElementById('modeStatic').checked = cfg.mode === 'static';
+                document.getElementById('staticIp').value = cfg.ip || '';
+                document.getElementById('staticGateway').value = cfg.gateway || '';
+                if (cfg.netmask) {
+                    const sel = document.getElementById('staticNetmask');
+                    for (let i = 0; i < sel.options.length; i++) {
+                        if (sel.options[i].value === cfg.netmask) { sel.selectedIndex = i; break; }
+                    }
+                }
+            } else {
+                document.getElementById('modeDhcp').checked = true;
+                document.getElementById('modeStatic').checked = false;
+                document.getElementById('staticIp').value = '';
+                document.getElementById('staticGateway').value = '';
+            }
+            toggleIfaceMode();
+        }
+
+        async function fetchIfaceConfigs() {
+            try {
+                const r = await fetch(API + '/api/interface/config');
+                const d = await r.json();
+                ifaceConfigs = d.configs || {};
+                setTimeout(loadIfaceConfig, 100);
+            } catch (e) { }
+        }
+
+        async function applyIfaceConfig() {
+            const iface = document.getElementById('ifaceSelect').value;
+            const mode = document.getElementById('modeStatic').checked ? 'static' : 'dhcp';
+            const ip = document.getElementById('staticIp').value.trim();
+            const gateway = document.getElementById('staticGateway').value.trim();
+            const ip6 = document.getElementById('staticIp6').value.trim();
+            const gateway6 = document.getElementById('staticGateway6').value.trim();
+
+            if (!iface) { showAlert('Select interface', 'error'); return; }
+            if (mode === 'static' && !ip) { showAlert('IPv4/Prefix required (e.g. 192.168.1.100/24)', 'error'); return; }
+            if (mode === 'static' && !ip.includes('/')) { showAlert('Include prefix (e.g. /24)', 'error'); return; }
+            if (ip6 && !ip6.includes('/')) { showAlert('IPv6 needs prefix (e.g. /64)', 'error'); return; }
+
+            if (!confirm(`Apply ${mode.toUpperCase()} config to ${iface}?`)) return;
+
+            const r = await fetch(API + '/api/interface/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ interface: iface, mode, ip, gateway, ip6, gateway6 })
+            });
+            const d = await r.json();
+            if (d.success) {
+                showAlert('Applied! Network may reconnect.', 'success');
+                setTimeout(() => { fetchInterfaces(); fetchIfaceConfigs(); }, 2000);
+            } else showAlert(d.error, 'error');
+        }
         async function addAcl() { const n = document.getElementById('aclNetwork').value, a = document.getElementById('aclAction').value; if (!n) return; const r = await fetch(API + '/api/acl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', network: n, acl_action: a }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('aclNetwork').value = ''; fetchAcl(); } else showAlert(d.error, 'error'); }
 
         function logout() { window.location.href = '/api/logout'; }

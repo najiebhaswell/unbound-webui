@@ -205,6 +205,8 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_stats()
         elif path == "/api/interfaces":
             self.api_interfaces()
+        elif path == "/api/interface/config":
+            self.api_interface_config_get()
         elif path == "/api/acl":
             self.api_acl_get()
         elif path.startswith("/api/graph"):
@@ -217,8 +219,6 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_forwarders_get()
         elif path == "/api/system":
             self.api_system()
-        elif path.startswith("/api/check"):
-            self.api_check_blocklist(parsed.query)
         elif path.startswith("/api/search-domains"):
             self.api_search_domains(parsed.query)
         elif path.startswith("/api/dig"):
@@ -227,6 +227,10 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_profile_get()
         elif path == "/api/logout":
             self.api_logout()
+        elif path == "/api/custom-blocklist":
+            self.api_custom_blocklist_get()
+        elif path == "/api/whitelist":
+            self.api_whitelist_get()
         else:
             super().do_GET()
     
@@ -270,6 +274,16 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
             self.api_forwarders_set(body)
         elif path == "/api/forwarder/delete":
             self.api_forwarder_delete(body)
+        elif path == "/api/custom-blocklist/add":
+            self.api_custom_blocklist_add(body)
+        elif path == "/api/custom-blocklist/delete":
+            self.api_custom_blocklist_delete(body)
+        elif path == "/api/whitelist/add":
+            self.api_whitelist_add(body)
+        elif path == "/api/whitelist/delete":
+            self.api_whitelist_delete(body)
+        elif path == "/api/interface/config":
+            self.api_interface_config_set(body)
         else:
             self.send_error(404)
     
@@ -998,55 +1012,6 @@ async function resetPassword() {
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
     
-    def api_check_blocklist(self, query):
-        """Check if domain is blocked using dig and sinkhole comparison"""
-        try:
-            params = urllib.parse.parse_qs(query)
-            domain = params.get('domain', [''])[0]
-            
-            if not domain:
-                self.send_json({"error": "Domain required"}, 400)
-                return
-            
-            # 1. Get Sinkhole IP from config
-            sinkhole_ip = "103.217.209.188" # Default fallback
-            try:
-                with open(UNBOUND_CONF, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line.startswith("blocklist-sinkhole:") and not line.startswith("blocklist-sinkhole-v6"):
-                            # Extract IP
-                            sinkhole_ip = line.split('"')[1] if '"' in line else line.split(':')[1].strip()
-                            break
-            except:
-                pass
-
-            # 2. Dig the domain
-            cmd = ["dig", "@127.0.0.1", "+short", domain, "A"]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-            
-            # Proper parsing of dig output
-            output_ips = []
-            if result.returncode == 0 and result.stdout:
-                output_ips = [line.strip() for line in result.stdout.strip().splitlines() if line.strip()]
-
-            status = "unknown"
-            if not output_ips:
-                status = "error" # No answer or error from dig
-            elif sinkhole_ip in output_ips:
-                status = "blocked"
-            else:
-                status = "allowed"
-            
-            self.send_json({
-                "domain": domain,
-                "status": status,
-                "output": "\n".join(output_ips) if output_ips else "No answer from DNS",
-                "sinkhole": sinkhole_ip
-            })
-        except Exception as e:
-            self.send_json({"error": str(e)}, 500)
-    
     def api_search_domains(self, query):
         """Search blocked domains from .domains file with wildcard support"""
         try:
@@ -1106,8 +1071,181 @@ async function resetPassword() {
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
 
+    def update_db_file(self, txt_path, db_path):
+        """Helper to run create_db"""
+        try:
+            # Ensure txt file exists
+            if not os.path.exists(txt_path):
+                with open(txt_path, 'w') as f:
+                    pass
+            
+            subprocess.run(
+                ["/usr/lib/unbound/create_db", txt_path, db_path],
+                check=True, capture_output=True
+            )
+            return True
+        except Exception as e:
+            print(f"Error updating DB {db_path}: {e}")
+            return False
 
-    def api_forwarders_set(self, body):
+    def api_custom_blocklist_get(self):
+        """Get custom blocklist domains"""
+        try:
+            domains = []
+            txt_path = "/etc/unbound/custom_blocked.txt"
+            if os.path.exists(txt_path):
+                with open(txt_path, 'r') as f:
+                    domains = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+            self.send_json({"domains": sorted(domains)})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
+    def api_custom_blocklist_add(self, body):
+        """Add domain to custom blocklist"""
+        try:
+            data = json.loads(body)
+            domain = data.get("domain", "").strip().lower()
+            if not domain:
+                self.send_json({"error": "Domain required"}, 400)
+                return
+            
+            txt_path = "/etc/unbound/custom_blocked.txt"
+            db_path = "/etc/unbound/custom_blocked.db"
+            
+            # Read existing
+            domains = set()
+            if os.path.exists(txt_path):
+                with open(txt_path, 'r') as f:
+                    domains = set(line.strip() for line in f if line.strip())
+            
+            if domain in domains:
+                self.send_json({"success": True, "message": "Domain already in list"})
+                return
+
+            domains.add(domain)
+            
+            with open(txt_path, 'w') as f:
+                for d in sorted(domains):
+                    f.write(f"{d}\n")
+            
+            self.update_db_file(txt_path, db_path)
+            self.send_json({"success": True, "message": f"Added {domain}"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
+    def api_custom_blocklist_delete(self, body):
+        """Remove domain from custom blocklist"""
+        try:
+            data = json.loads(body)
+            domain = data.get("domain", "").strip().lower()
+            if not domain:
+                self.send_json({"error": "Domain required"}, 400)
+                return
+            
+            txt_path = "/etc/unbound/custom_blocked.txt"
+            db_path = "/etc/unbound/custom_blocked.db"
+            
+            if not os.path.exists(txt_path):
+                self.send_json({"error": "List empty"}, 404)
+                return
+
+            with open(txt_path, 'r') as f:
+                domains = [line.strip() for line in f if line.strip()]
+            
+            if domain not in domains:
+                self.send_json({"error": "Domain not found"}, 404)
+                return
+            
+            domains.remove(domain)
+            
+            with open(txt_path, 'w') as f:
+                for d in sorted(domains):
+                    f.write(f"{d}\n")
+            
+            self.update_db_file(txt_path, db_path)
+            self.send_json({"success": True, "message": f"Removed {domain}"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
+    def api_whitelist_get(self):
+        """Get whitelist domains"""
+        try:
+            domains = []
+            txt_path = "/etc/unbound/whitelist.txt"
+            if os.path.exists(txt_path):
+                with open(txt_path, 'r') as f:
+                    domains = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+            self.send_json({"domains": sorted(domains)})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
+    def api_whitelist_add(self, body):
+        """Add domain to whitelist"""
+        try:
+            data = json.loads(body)
+            domain = data.get("domain", "").strip().lower()
+            if not domain:
+                self.send_json({"error": "Domain required"}, 400)
+                return
+            
+            txt_path = "/etc/unbound/whitelist.txt"
+            db_path = "/etc/unbound/whitelist.db"
+            
+            domains = set()
+            if os.path.exists(txt_path):
+                with open(txt_path, 'r') as f:
+                    domains = set(line.strip() for line in f if line.strip())
+            
+            if domain in domains:
+                self.send_json({"success": True, "message": "Domain already in list"})
+                return
+
+            domains.add(domain)
+            
+            with open(txt_path, 'w') as f:
+                for d in sorted(domains):
+                    f.write(f"{d}\n")
+            
+            self.update_db_file(txt_path, db_path)
+            self.send_json({"success": True, "message": f"Added {domain}"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
+    def api_whitelist_delete(self, body):
+        """Remove domain from whitelist"""
+        try:
+            data = json.loads(body)
+            domain = data.get("domain", "").strip().lower()
+            if not domain:
+                self.send_json({"error": "Domain required"}, 400)
+                return
+            
+            txt_path = "/etc/unbound/whitelist.txt"
+            db_path = "/etc/unbound/whitelist.db"
+            
+            if not os.path.exists(txt_path):
+                self.send_json({"error": "List empty"}, 404)
+                return
+
+            with open(txt_path, 'r') as f:
+                domains = [line.strip() for line in f if line.strip()]
+            
+            if domain not in domains:
+                self.send_json({"error": "Domain not found"}, 404)
+                return
+            
+            domains.remove(domain)
+            
+            with open(txt_path, 'w') as f:
+                for d in sorted(domains):
+                    f.write(f"{d}\n")
+            
+            self.update_db_file(txt_path, db_path)
+            self.send_json({"success": True, "message": f"Removed {domain}"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+
+
         """Add or update a forward-zone"""
         try:
             data = json.loads(body)
@@ -1233,6 +1371,155 @@ async function resetPassword() {
                 self.send_json({"error": result.stderr}, 400)
             else:
                 self.send_json({"success": True, "message": f"Added {ip}/{prefix} to {iface}"})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+    
+    def api_interface_config_get(self):
+        """Get network interface configuration from /etc/network/interfaces"""
+        try:
+            interfaces_file = "/etc/network/interfaces"
+            configs = {}
+            
+            # Get list of available interfaces
+            result = subprocess.run(["ip", "-j", "link"], capture_output=True, text=True)
+            ifaces = json.loads(result.stdout) if result.returncode == 0 else []
+            available = [i["ifname"] for i in ifaces if i["ifname"] != "lo"]
+            
+            # Parse /etc/network/interfaces
+            if os.path.exists(interfaces_file):
+                with open(interfaces_file, 'r') as f:
+                    content = f.read()
+                
+                current_iface = None
+                for line in content.splitlines():
+                    line = line.strip()
+                    if line.startswith("iface "):
+                        parts = line.split()
+                        if len(parts) >= 4:
+                            current_iface = parts[1]
+                            mode = "dhcp" if "dhcp" in parts else "static"
+                            configs[current_iface] = {"mode": mode, "ip": "", "netmask": "", "gateway": ""}
+                    elif current_iface and line.startswith("address "):
+                        configs[current_iface]["ip"] = line.split()[1] if len(line.split()) > 1 else ""
+                    elif current_iface and line.startswith("netmask "):
+                        configs[current_iface]["netmask"] = line.split()[1] if len(line.split()) > 1 else ""
+                    elif current_iface and line.startswith("gateway "):
+                        configs[current_iface]["gateway"] = line.split()[1] if len(line.split()) > 1 else ""
+            
+            self.send_json({"available": available, "configs": configs})
+        except Exception as e:
+            self.send_json({"error": str(e)}, 500)
+    
+    def api_interface_config_set(self, body):
+        """Set network interface configuration"""
+        try:
+            data = json.loads(body)
+            iface = data.get("interface")
+            mode = data.get("mode")  # "dhcp" or "static"
+            ip_with_prefix = data.get("ip", "")  # Format: IP/prefix (e.g. 192.168.1.100/24)
+            gateway = data.get("gateway", "")
+            ip6_with_prefix = data.get("ip6", "")  # Format: IPv6/prefix (e.g. 2001:db8::1/64)
+            gateway6 = data.get("gateway6", "")
+            
+            if not iface or not mode:
+                self.send_json({"error": "Interface and mode required"}, 400)
+                return
+            
+            if mode == "static":
+                if not ip_with_prefix or "/" not in ip_with_prefix:
+                    self.send_json({"error": "IPv4/prefix required (e.g. 192.168.1.100/24)"}, 400)
+                    return
+                # Parse IPv4 and prefix
+                ip_parts = ip_with_prefix.split("/")
+                ip = ip_parts[0]
+                prefix = ip_parts[1]
+                # Parse IPv6 if provided
+                ip6 = ""
+                prefix6 = ""
+                if ip6_with_prefix and "/" in ip6_with_prefix:
+                    ip6_parts = ip6_with_prefix.split("/")
+                    ip6 = ip6_parts[0]
+                    prefix6 = ip6_parts[1]
+            else:
+                ip = ""
+                prefix = ""
+                ip6 = ""
+                prefix6 = ""
+            
+            interfaces_file = "/etc/network/interfaces"
+            backup_file = "/etc/network/interfaces.bak"
+            
+            # Backup current config
+            if os.path.exists(interfaces_file):
+                with open(interfaces_file, 'r') as f:
+                    backup_content = f.read()
+                with open(backup_file, 'w') as f:
+                    f.write(backup_content)
+            
+            # Read and modify config
+            lines = []
+            if os.path.exists(interfaces_file):
+                with open(interfaces_file, 'r') as f:
+                    lines = f.readlines()
+            
+            # Remove existing config for this interface (both inet and inet6)
+            new_lines = []
+            skip_until_next_iface = False
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("auto " + iface) or stripped.startswith("iface " + iface + " "):
+                    skip_until_next_iface = True
+                    continue
+                if skip_until_next_iface:
+                    if stripped.startswith("auto ") or stripped.startswith("iface "):
+                        skip_until_next_iface = False
+                        new_lines.append(line)
+                    continue
+                new_lines.append(line)
+            
+            # Add new config
+            new_lines.append(f"\nauto {iface}\n")
+            if mode == "dhcp":
+                new_lines.append(f"iface {iface} inet dhcp\n")
+            else:
+                # IPv4 config
+                new_lines.append(f"iface {iface} inet static\n")
+                new_lines.append(f"    address {ip}/{prefix}\n")
+                if gateway:
+                    new_lines.append(f"    gateway {gateway}\n")
+                # IPv6 config (if provided)
+                if ip6:
+                    new_lines.append(f"\niface {iface} inet6 static\n")
+                    new_lines.append(f"    address {ip6}/{prefix6}\n")
+                    if gateway6:
+                        new_lines.append(f"    gateway {gateway6}\n")
+            
+            # Write new config
+            with open(interfaces_file, 'w') as f:
+                f.writelines(new_lines)
+            
+            # Apply changes
+            subprocess.run(["ip", "addr", "flush", "dev", iface], capture_output=True)
+            subprocess.run(["ip", "link", "set", iface, "down"], capture_output=True)
+            subprocess.run(["ip", "link", "set", iface, "up"], capture_output=True)
+            
+            if mode == "dhcp":
+                subprocess.run(["dhclient", "-r", iface], capture_output=True)
+                subprocess.run(["dhclient", iface], capture_output=True)
+            else:
+                # Apply IPv4
+                subprocess.run(["ip", "addr", "add", f"{ip}/{prefix}", "dev", iface], capture_output=True)
+                if gateway:
+                    subprocess.run(["ip", "route", "del", "default"], capture_output=True)
+                    subprocess.run(["ip", "route", "add", "default", "via", gateway, "dev", iface], capture_output=True)
+                # Apply IPv6 if provided
+                if ip6:
+                    subprocess.run(["ip", "-6", "addr", "add", f"{ip6}/{prefix6}", "dev", iface], capture_output=True)
+                    if gateway6:
+                        subprocess.run(["ip", "-6", "route", "del", "default"], capture_output=True)
+                        subprocess.run(["ip", "-6", "route", "add", "default", "via", gateway6, "dev", iface], capture_output=True)
+            
+            self.send_json({"success": True, "message": f"Applied {mode} config to {iface}"})
         except Exception as e:
             self.send_json({"error": str(e)}, 500)
     
