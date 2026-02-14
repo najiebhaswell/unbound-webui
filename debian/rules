@@ -14,6 +14,7 @@ override_dh_auto_install:
 	# Install application files
 	install -m 755 app.py $(CURDIR)/debian/unbound-webui/opt/unbound-webui/
 	install -m 644 index.html $(CURDIR)/debian/unbound-webui/opt/unbound-webui/
+	install -m 644 blocked.html $(CURDIR)/debian/unbound-webui/opt/unbound-webui/
 	
 	# Install systemd service
 	install -m 644 unbound-webui.service $(CURDIR)/debian/unbound-webui/lib/systemd/system/

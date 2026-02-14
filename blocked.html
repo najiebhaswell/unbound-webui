@@ -5,16 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Situs Diblokir</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0b0e14;
+            color: #e6edf3;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -22,82 +24,116 @@
             padding: 20px;
         }
 
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 30%, rgba(248, 81, 73, .06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
         .container {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(17, 22, 34, .8);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
             border-radius: 16px;
-            padding: 40px;
+            padding: 48px 40px;
             max-width: 500px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, .06);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, .4);
+            animation: fadeUp .5s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
         }
 
         .icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            background: linear-gradient(135deg, #f85149, #da3633);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 25px;
-            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+            box-shadow: 0 8px 32px rgba(248, 81, 73, .3);
         }
 
         .icon svg {
             width: 45px;
             height: 45px;
-            fill: white;
+            fill: white
         }
 
         h1 {
-            color: #c0392b;
-            font-size: 1.8rem;
-            margin-bottom: 15px;
+            color: #f85149;
+            font-size: 1.6rem;
+            margin-bottom: 15px
         }
 
         .domain {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: rgba(13, 17, 23, .8);
+            border: 1px solid rgba(255, 255, 255, .08);
             border-radius: 8px;
-            padding: 12px 20px;
-            font-family: monospace;
-            font-size: 1.1rem;
-            color: #2c3e50;
+            padding: 14px 20px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 1rem;
+            color: #39d2c0;
             margin: 20px 0;
             word-break: break-all;
         }
 
         .message {
-            color: #555;
-            line-height: 1.6;
+            color: #7d8590;
+            line-height: 1.7;
             margin-bottom: 25px;
+            font-size: 14px
+        }
+
+        .message strong {
+            color: #e6edf3
         }
 
         .info-box {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
+            background: rgba(210, 153, 34, .08);
+            border: 1px solid rgba(210, 153, 34, .2);
             border-radius: 8px;
-            padding: 15px;
-            font-size: 0.9rem;
-            color: #856404;
+            padding: 16px;
+            font-size: 13px;
+            color: #d29922;
             text-align: left;
         }
 
         .info-box strong {
             display: block;
             margin-bottom: 5px;
+            color: #e3b341
         }
 
         .footer {
             margin-top: 30px;
-            color: #888;
-            font-size: 0.8rem;
+            color: #484f58;
+            font-size: 12px
         }
 
         .footer a {
-            color: #3498db;
-            text-decoration: none;
+            color: #638cff;
+            text-decoration: none
+        }
+
+        .footer a:hover {
+            text-decoration: underline
         }
     </style>
 </head>
@@ -107,30 +143,23 @@
         <div class="icon">
             <svg viewBox="0 0 24 24">
                 <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                <path
                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
             </svg>
         </div>
-
         <h1>⛔ Situs Diblokir</h1>
-
         <div class="domain" id="blockedDomain">{{DOMAIN}}</div>
-
         <p class="message">
             Akses ke situs ini telah dibatasi sesuai dengan kebijakan
             <strong>Trust Positif</strong> Kementerian Kominfo Republik Indonesia.
         </p>
-
         <div class="info-box">
             <strong>ℹ️ Informasi:</strong>
             Situs ini termasuk dalam daftar situs yang diblokir karena mengandung
             konten negatif atau melanggar peraturan perundang-undangan.
         </div>
-
         <div class="footer">
             <p>DNS Server: {{SERVER_IP}}</p>
-            <p style="margin-top:5px;">
+            <p style="margin-top:5px">
                 <a href="https://trustpositif.kominfo.go.id" target="_blank">Trust Positif Kominfo</a>
             </p>
         </div>

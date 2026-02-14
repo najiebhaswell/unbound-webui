@@ -5,415 +5,745 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrustPositif DNS Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box
         }
 
         :root {
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --border: #e2e8f0;
-            --text: #1e293b;
-            --text-dim: #64748b;
-            --primary: #3b82f6;
-            --green: #22c55e;
-            --red: #ef4444;
-            --yellow: #f59e0b;
-            --purple: #8b5cf6;
+            --bg-primary: #080a10;
+            --bg-secondary: #0d1019;
+            --bg-card: rgba(14, 18, 28, 0.65);
+            --bg-card-hover: rgba(22, 28, 42, 0.8);
+            --bg-input: #080c14;
+            --border: rgba(255, 255, 255, 0.05);
+            --border-focus: rgba(99, 140, 255, 0.5);
+            --text: #e6edf3;
+            --text-dim: #8b949e;
+            --text-muted: #484f58;
+            --accent: #7aa2f7;
+            --accent-glow: rgba(122, 162, 247, 0.12);
+            --green: #73daca;
+            --green-glow: rgba(115, 218, 202, 0.1);
+            --red: #f7768e;
+            --red-glow: rgba(247, 118, 142, 0.1);
+            --yellow: #e0af68;
+            --yellow-glow: rgba(224, 175, 104, 0.1);
+            --purple: #bb9af7;
+            --purple-glow: rgba(187, 154, 247, 0.1);
+            --cyan: #7dcfff;
+            --cyan-glow: rgba(125, 207, 255, 0.1);
+            --sidebar-w: 260px;
+            --radius: 14px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --glass: saturate(180%) blur(20px);
         }
 
-        html,
-        body {
-            height: 100%;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+        html {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             font-size: 14px;
+            color: var(--text);
+            background: var(--bg-primary)
         }
 
-        /* Header */
-        .header {
-            background: var(--card);
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: var(--bg-primary);
+            background-image: radial-gradient(ellipse 80% 60% at 10% 20%, rgba(122, 162, 247, .04) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(115, 218, 202, .03) 0%, transparent 50%), radial-gradient(ellipse 50% 40% at 50% 10%, rgba(187, 154, 247, .025) 0%, transparent 50%)
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 3px
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-dim)
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .5
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0
+            }
+
+            100% {
+                background-position: 200% 0
+            }
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                opacity: .6
+            }
+
+            50% {
+                opacity: 1
+            }
+        }
+
+        @keyframes borderGlow {
+            0% {
+                border-color: rgba(122, 162, 247, .15)
+            }
+
+            50% {
+                border-color: rgba(122, 162, 247, .25)
+            }
+
+            100% {
+                border-color: rgba(122, 162, 247, .15)
+            }
+        }
+
+        /* ─── LAYOUT ─── */
+        .app {
+            display: flex;
+            min-height: 100vh
+        }
+
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+            background-image: linear-gradient(180deg, rgba(122, 162, 247, .02) 0%, transparent 40%);
+        }
+
+        .sidebar-header {
+            padding: 28px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .sidebar-logo {
+            font-size: 32px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 8px rgba(122, 162, 247, .3))
+        }
+
+        .sidebar-title {
+            font-size: 17px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7aa2f7, #73daca);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -.3px
+        }
+
+        .sidebar-subtitle {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 14px;
+            overflow-y: auto
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all .25s ease;
+            margin-bottom: 4px;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: .1px;
+        }
+
+        .nav-item:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.03);
+            transform: translateX(2px)
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(122, 162, 247, .15), rgba(115, 218, 202, .08));
+            font-weight: 600;
+            border: 1px solid rgba(122, 162, 247, .12)
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--accent), var(--cyan));
+            border-radius: 0 3px 3px 0
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(122, 162, 247, .06), transparent);
+            pointer-events: none
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            opacity: .5;
+            transition: opacity .2s
+        }
+
+        .nav-item:hover .nav-icon {
+            opacity: .8
+        }
+
+        .nav-item.active .nav-icon {
+            opacity: 1
+        }
+
+        .sidebar-footer {
+            padding: 18px 22px;
+            border-top: 1px solid var(--border)
+        }
+
+        .sidebar-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 500
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 12px var(--green), 0 0 4px var(--green);
+            animation: glow 3s ease-in-out infinite
+        }
+
+        .status-dot.offline {
+            background: var(--red);
+            box-shadow: 0 0 12px var(--red), 0 0 4px var(--red)
+        }
+
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column
+        }
+
+        .topbar {
             padding: 16px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background: rgba(8, 10, 16, 0.75);
+            -webkit-backdrop-filter: var(--glass);
+            backdrop-filter: var(--glass);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
 
-        .logo {
+        .topbar-title {
+            font-size: 20px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 12px;
+            letter-spacing: -.3px
         }
 
-        .logo-icon {
-            font-size: 28px;
-        }
-
-        .logo-text {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .status-badge {
-            background: var(--green);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 12px;
-        }
-
-        .badge-allow {
-            background: var(--green);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-
-        .badge-deny {
-            background: var(--red);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-
-        .header-right {
+        .topbar-actions {
             display: flex;
             align-items: center;
-            gap: 20px;
-            font-size: 13px;
+            gap: 8px
         }
 
-        .header-right a {
-            color: var(--text-dim);
-            text-decoration: none;
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: var(--radius-xs);
             cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all .25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: .2px;
         }
 
-        .header-right a:hover {
-            color: var(--primary);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #5a8af7);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(122, 162, 247, .2)
         }
 
-        /* Tabs - Centered */
-        .tabs-bar {
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: center;
-            padding: 0 32px;
+        .btn-primary:hover {
+            box-shadow: 0 4px 20px rgba(122, 162, 247, .35);
+            transform: translateY(-1px)
         }
 
-        .tabs {
-            display: flex;
-            gap: 0;
+        .btn-danger {
+            background: linear-gradient(135deg, var(--red), #e5607a);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(247, 118, 142, .2)
         }
 
-        .tab {
-            padding: 16px 28px;
+        .btn-danger:hover {
+            box-shadow: 0 4px 20px rgba(247, 118, 142, .35);
+            transform: translateY(-1px)
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, .04);
             color: var(--text-dim);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
+            border: 1px solid var(--border)
         }
 
-        .tab:hover {
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, .07);
+            border-color: rgba(255, 255, 255, .1);
+            color: var(--text)
+        }
+
+        .btn-sm {
+            padding: 7px 14px;
+            font-size: 11px
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
             color: var(--text);
-            background: #f1f5f9;
+            cursor: pointer;
+            padding: 8px
         }
 
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+        .hamburger svg {
+            width: 24px;
+            height: 24px
         }
 
-        /* Content */
         .content {
-            padding: 32px;
-            max-width: 1400px;
-            margin: 0 auto;
+            padding: 28px 32px;
+            flex: 1
         }
 
         .page {
             display: none;
+            animation: fadeIn .45s ease
         }
 
         .page.active {
-            display: block;
+            display: block
         }
 
-        /* Page Header */
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        .page-title {
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .btn-action {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-danger {
-            background: var(--red);
-            color: white;
-        }
-
-        .btn-action:hover {
-            opacity: 0.9;
-        }
-
-        /* Stats Grid */
+        /* ─── STATS ─── */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 28px;
+            gap: 16px;
+            margin-bottom: 24px
         }
 
         .stat-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            background: var(--bg-card);
             border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            transition: all .35s ease;
+            position: relative;
+            overflow: hidden;
+            -webkit-backdrop-filter: var(--glass);
+            backdrop-filter: var(--glass);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            opacity: .03;
+            pointer-events: none;
+            transform: translate(30%, -30%)
+        }
+
+        .stat-card.glow-blue::before {
+            background: var(--accent)
+        }
+
+        .stat-card.glow-green::before {
+            background: var(--green)
+        }
+
+        .stat-card.glow-yellow::before {
+            background: var(--yellow)
+        }
+
+        .stat-card.glow-purple::before {
+            background: var(--purple)
+        }
+
+        .stat-card.glow-red::before {
+            background: var(--red)
+        }
+
+        .stat-card.glow-cyan::before {
+            background: var(--cyan)
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, .08);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .3)
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            position: relative;
+        }
+
+        .stat-icon.blue {
+            background: linear-gradient(135deg, rgba(122, 162, 247, .2), rgba(122, 162, 247, .05));
+            color: var(--accent);
+            box-shadow: 0 4px 12px rgba(122, 162, 247, .1)
+        }
+
+        .stat-icon.green {
+            background: linear-gradient(135deg, rgba(115, 218, 202, .2), rgba(115, 218, 202, .05));
+            color: var(--green);
+            box-shadow: 0 4px 12px rgba(115, 218, 202, .1)
+        }
+
+        .stat-icon.yellow {
+            background: linear-gradient(135deg, rgba(224, 175, 104, .2), rgba(224, 175, 104, .05));
+            color: var(--yellow);
+            box-shadow: 0 4px 12px rgba(224, 175, 104, .1)
+        }
+
+        .stat-icon.purple {
+            background: linear-gradient(135deg, rgba(187, 154, 247, .2), rgba(187, 154, 247, .05));
+            color: var(--purple);
+            box-shadow: 0 4px 12px rgba(187, 154, 247, .1)
+        }
+
+        .stat-icon.red {
+            background: linear-gradient(135deg, rgba(247, 118, 142, .2), rgba(247, 118, 142, .05));
+            color: var(--red);
+            box-shadow: 0 4px 12px rgba(247, 118, 142, .1)
+        }
+
+        .stat-icon.cyan {
+            background: linear-gradient(135deg, rgba(125, 207, 255, .2), rgba(125, 207, 255, .05));
+            color: var(--cyan);
+            box-shadow: 0 4px 12px rgba(125, 207, 255, .1)
         }
 
         .stat-value {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 6px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -.5px;
+            line-height: 1.2
         }
 
         .stat-value.blue {
-            color: var(--primary);
+            color: var(--accent)
         }
 
         .stat-value.green {
-            color: var(--green);
+            color: var(--green)
         }
 
         .stat-value.yellow {
-            color: var(--yellow);
+            color: var(--yellow)
         }
 
         .stat-value.purple {
-            color: var(--purple);
+            color: var(--purple)
         }
 
         .stat-value.red {
-            color: var(--red);
+            color: var(--red)
+        }
+
+        .stat-value.cyan {
+            color: var(--cyan)
         }
 
         .stat-label {
-            font-size: 13px;
-            color: var(--text-dim);
-        }
-
-        .stat-sub {
             font-size: 12px;
             color: var(--text-dim);
-            margin-top: 8px;
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: .2px
         }
 
-        /* Cards */
+        .stat-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, .04);
+            border-radius: 2px;
+            margin-top: 14px;
+            overflow: hidden
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width .8s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        /* ─── CARDS ─── */
         .card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            margin-bottom: 24px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+            -webkit-backdrop-filter: var(--glass);
+            backdrop-filter: var(--glass);
+            transition: all .3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, .08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .2)
         }
 
         .card-header {
-            padding: 18px 24px;
+            padding: 18px 22px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: center
         }
 
         .card-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: .1px
         }
 
         .card-body {
-            padding: 24px;
+            padding: 22px
         }
 
-        /* Graph Controls */
         .graph-controls {
             display: flex;
-            gap: 4px;
+            gap: 4px
         }
 
         .range-btn {
             padding: 6px 14px;
-            background: var(--bg);
+            background: rgba(255, 255, 255, .03);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text-dim);
+            border-radius: var(--radius-xs);
+            color: var(--text-muted);
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all .2s;
         }
 
         .range-btn:hover {
-            background: white;
-            color: var(--text);
+            background: rgba(255, 255, 255, .06);
+            color: var(--text-dim)
         }
 
         .range-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--accent), #5a8af7);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 2px 12px rgba(122, 162, 247, .25)
         }
 
         #qpsChart {
             width: 100%;
-            height: 200px;
+            height: 240px
         }
 
-        /* Grid Layouts */
+        /* ─── GRID ─── */
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            gap: 20px
         }
 
         .grid-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 24px;
+            gap: 20px
         }
 
-        @media (max-width: 1000px) {
-
-            .stats-grid,
-            .grid-3 {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 700px) {
-
-            .stats-grid,
-            .grid-2,
-            .grid-3 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Forms */
+        /* ─── FORMS ─── */
         input,
         select,
         textarea {
             width: 100%;
-            padding: 12px 16px;
-            background: var(--bg);
+            padding: 10px 14px;
+            background: var(--bg-input);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: var(--radius-xs);
             color: var(--text);
-            font-size: 14px;
-            margin-bottom: 12px;
+            font-size: 13px;
+            font-family: inherit;
+            margin-bottom: 10px;
+            transition: all .2s;
         }
 
         input:focus,
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: var(--primary);
-            background: white;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: rgba(13, 17, 23, .9)
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-muted)
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237d8590' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center
+        }
+
+        select option {
+            background: var(--bg-secondary);
+            color: var(--text)
+        }
+
+        .form-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: .5px;
+            margin-bottom: 6px
         }
 
         .form-row {
             display: flex;
-            gap: 12px;
-            align-items: center;
+            gap: 10px;
+            align-items: center
         }
 
-        .form-label {
-            font-size: 12px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .btn-blue {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-gray {
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        /* Tables */
+        /* ─── TABLE ─── */
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: collapse
         }
 
         th,
         td {
-            padding: 14px 16px;
+            padding: 12px 14px;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border)
         }
 
         th {
@@ -421,427 +751,652 @@
             text-transform: uppercase;
             color: var(--text-dim);
             font-weight: 600;
-            background: var(--bg);
+            background: rgba(255, 255, 255, .02)
+        }
+
+        td {
+            font-size: 13px
         }
 
         .scroll-box {
             max-height: 200px;
-            overflow-y: auto;
+            overflow-y: auto
         }
 
-        /* Badges */
+        /* ─── BADGES ─── */
         .badge {
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: var(--radius-xs);
+            font-size: 11px;
+            font-weight: 600
         }
 
         .badge-allow {
-            background: #dcfce7;
-            color: #166534;
+            background: var(--green-glow);
+            color: var(--green)
         }
 
         .badge-deny {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--red-glow);
+            color: var(--red)
         }
 
-        /* ACL List */
+        .badge-online {
+            background: var(--green-glow);
+            color: var(--green)
+        }
+
+        .badge-offline {
+            background: var(--red-glow);
+            color: var(--red)
+        }
+
+        /* ─── ACL ─── */
         .acl-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border)
         }
 
         .acl-item:last-child {
-            border: none;
+            border: none
         }
 
-        /* Result Box */
+        /* ─── RESULT BOX ─── */
         .result-box {
-            margin-top: 16px;
-            background: var(--bg);
-            padding: 16px;
-            border-radius: 8px;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 13px;
-            max-height: 180px;
+            margin-top: 12px;
+            background: var(--bg-input);
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 12px;
+            max-height: 200px;
             overflow: auto;
             display: none;
             border: 1px solid var(--border);
+            color: var(--cyan);
         }
 
-        /* Alert */
+        /* ─── ALERT ─── */
         .alert {
             position: fixed;
-            top: 24px;
-            right: 24px;
+            top: 20px;
+            right: 20px;
             padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
             font-weight: 500;
-            z-index: 1000;
+            z-index: 2000;
             display: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+            animation: slideIn .3s ease;
+            -webkit-backdrop-filter: var(--glass);
+            backdrop-filter: var(--glass);
         }
 
         .alert-success {
-            background: var(--green);
-            color: white;
+            background: rgba(63, 185, 80, .15);
+            color: var(--green);
+            border: 1px solid rgba(63, 185, 80, .3)
         }
 
         .alert-error {
-            background: var(--red);
-            color: white;
+            background: rgba(248, 81, 73, .15);
+            color: var(--red);
+            border: 1px solid rgba(248, 81, 73, .3)
         }
 
-        /* Modal */
+        /* ─── MODAL ─── */
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, .6);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px)
         }
 
         .modal.show {
-            display: flex;
+            display: flex
         }
 
         .modal-box {
-            background: var(--card);
+            background: var(--bg-secondary);
             padding: 28px;
-            border-radius: 16px;
-            width: 400px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius);
+            width: 420px;
+            border: 1px solid var(--border);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, .4)
         }
 
         .modal-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 20px
+        }
+
+        /* ─── LIST ITEM ─── */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: var(--radius-xs);
+            transition: background .2s;
+            font-size: 13px
+        }
+
+        .list-item:hover {
+            background: rgba(255, 255, 255, .03)
+        }
+
+        .list-item+.list-item {
+            border-top: 1px solid var(--border)
+        }
+
+        .del-btn {
+            color: var(--red);
+            cursor: pointer;
+            font-size: 16px;
+            opacity: .6;
+            transition: opacity .2s;
+            background: none;
+            border: none;
+            font-family: inherit
+        }
+
+        .del-btn:hover {
+            opacity: 1
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media(max-width:1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media(max-width:900px) {
+            .sidebar {
+                transform: translateX(-100%)
+            }
+
+            .sidebar.open {
+                transform: translateX(0)
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, .5);
+                z-index: 99
+            }
+
+            .sidebar-overlay.show {
+                display: block
+            }
+
+            .main {
+                margin-left: 0
+            }
+
+            .hamburger {
+                display: flex
+            }
+
+            .content {
+                padding: 20px 16px
+            }
+
+            .topbar {
+                padding: 12px 16px
+            }
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:600px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .stat-card {
+                padding: 14px
+            }
+
+            .stat-value {
+                font-size: 20px
+            }
+
+            .form-row {
+                flex-direction: column
+            }
+
+            .form-row>* {
+                width: 100%
+            }
+
+            .topbar-title {
+                font-size: 16px
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="header">
-        <div class="logo">
-            <span class="logo-icon">🛡️</span>
-            <span class="logo-text">TrustPositif DNS</span>
-            <span class="status-badge" id="statusBadge">ONLINE</span>
-        </div>
-        <div class="header-right">
-            <a onclick="logout()">Logout</a>
-        </div>
-    </div>
-
-    <div class="tabs-bar">
-        <div class="tabs">
-            <div class="tab active" onclick="showPage('dashboard')">📊 Dashboard</div>
-            <div class="tab" onclick="showPage('network')">⚙️ Settings</div>
-            <div class="tab" onclick="showPage('config')">🔒 Filters</div>
-            <div class="tab" onclick="showPage('tools')">🔧 Tools</div>
-            <div class="tab" onclick="showPage('account')">👤 Account</div>
-        </div>
-    </div>
-
-    <div class="content">
-        <!-- Dashboard -->
-        <div id="page-dashboard" class="page active">
-            <div class="page-header">
-                <span class="page-title">Dashboard</span>
-                <button class="btn-action btn-primary" onclick="reload()">🔄 Reload</button>
-                <button class="btn-action btn-danger" onclick="restart()">⚡ Restart</button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value blue" id="totalQueries">0</div>
-                    <div class="stat-label">DNS Queries</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value green" id="cacheHits">0</div>
-                    <div class="stat-label">Cache Hits</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value yellow" id="uptime">-</div>
-                    <div class="stat-label">Uptime</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value purple" id="qps">0</div>
-                    <div class="stat-label">Queries/sec</div>
+    <div class="app">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-logo">🛡️</span>
+                <div>
+                    <div class="sidebar-title">TrustPositif DNS</div>
+                    <div class="sidebar-subtitle">Management Console</div>
                 </div>
             </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" onclick="showPage('dashboard',this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    Dashboard
+                </div>
+                <div class="nav-item" onclick="showPage('network',this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                    </svg>
+                    Settings
+                </div>
+                <div class="nav-item" onclick="showPage('config',this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Filters
+                </div>
+                <div class="nav-item" onclick="showPage('tools',this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+                    </svg>
+                    Tools
+                </div>
+                <div class="nav-item" onclick="showPage('account',this)">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Account
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-status"><span class="status-dot" id="statusDot"></span><span
+                        id="statusText">Online</span></div>
+            </div>
+        </aside>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value red" id="blocklistCount">-</div>
-                    <div class="stat-label">Blocklist Domains</div>
+        <div class="main">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <button class="hamburger" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg></button>
+                    <span id="pageTitle">Dashboard</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value blue" id="cpuLoad">-</div>
-                    <div class="stat-label">CPU Load</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value green" id="memUsage">-</div>
-                    <div class="stat-label">Memory</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value yellow" id="diskUsage">-</div>
-                    <div class="stat-label">Disk</div>
+                <div class="topbar-actions" id="topbarActions">
+                    <button class="btn btn-primary btn-sm" onclick="reload()">↻ Reload</button>
+                    <button class="btn btn-danger btn-sm" onclick="restart()">⚡ Restart</button>
+                    <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Query Statistics</span>
-                    <div class="graph-controls">
-                        <button class="range-btn" data-range="1h" onclick="setRange('1h')">1H</button>
-                        <button class="range-btn" data-range="12h" onclick="setRange('12h')">12H</button>
-                        <button class="range-btn active" data-range="24h" onclick="setRange('24h')">24H</button>
-                        <button class="range-btn" data-range="7d" onclick="setRange('7d')">7D</button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="qpsChart"></canvas>
-                    <div
-                        style="display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:13px;color:var(--text-dim);">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="width:24px;height:3px;background:var(--primary);border-radius:2px;"></span>
-                            <span>Queries/sec</span>
+            <div class="content">
+                <!-- Dashboard -->
+                <div id="page-dashboard" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card glow-blue">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value blue" id="totalQueries">0</div>
+                                    <div class="stat-label">DNS Queries</div>
+                                </div>
+                                <div class="stat-icon blue"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M18 20V10M12 20V4M6 20v-6" />
+                                    </svg></div>
+                            </div>
+                        </div>
+                        <div class="stat-card glow-green">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value green" id="cacheHits">0</div>
+                                    <div class="stat-label">Cache Hits</div>
+                                </div>
+                                <div class="stat-icon green"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M20 6L9 17l-5-5" />
+                                    </svg></div>
+                            </div>
+                        </div>
+                        <div class="stat-card glow-yellow">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value yellow" id="uptime">-</div>
+                                    <div class="stat-label">Uptime</div>
+                                </div>
+                                <div class="stat-icon yellow"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M12 6v6l4 2" />
+                                    </svg></div>
+                            </div>
+                        </div>
+                        <div class="stat-card glow-purple">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value purple" id="qps">0</div>
+                                    <div class="stat-label">Queries/sec</div>
+                                </div>
+                                <div class="stat-icon purple"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                                    </svg></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Settings -->
-        <div id="page-network" class="page">
-            <div class="page-header">
-                <span class="page-title">Settings</span>
-            </div>
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Network Interfaces</span></div>
-                    <div class="card-body">
-                        <div style="margin-top:0;">
-                            <div class="form-label">Configure Interface</div>
-                            <div class="form-row" style="margin-bottom:10px;">
-                                <select id="ifaceSelect" onchange="loadIfaceConfig()" style="flex:1;margin:0;"></select>
-                                <label style="display:flex;align-items:center;gap:6px;margin-left:16px;">
-                                    <input type="radio" name="ifaceMode" value="dhcp" id="modeDhcp"
-                                        onchange="toggleIfaceMode()" checked> DHCP
-                                </label>
-                                <label style="display:flex;align-items:center;gap:6px;">
-                                    <input type="radio" name="ifaceMode" value="static" id="modeStatic"
-                                        onchange="toggleIfaceMode()"> Static
-                                </label>
+                    <div class="stats-grid">
+                        <div class="stat-card glow-red">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value red" id="blocklistCount">-</div>
+                                    <div class="stat-label">Blocklist Domains</div>
+                                </div>
+                                <div class="stat-icon red"><svg width="18" height="18" fill="none" stroke="currentColor"
+                                        stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M4.93 4.93l14.14 14.14" />
+                                    </svg></div>
                             </div>
-                            <div id="staticFields" style="display:none;">
-                                <div class="form-row" style="margin-bottom:8px;">
+                        </div>
+                        <div class="stat-card glow-blue">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value blue" id="cpuLoad">-</div>
+                                    <div class="stat-label">CPU Load</div>
+                                </div>
+                                <div class="stat-icon blue"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <rect x="4" y="4" width="16" height="16" rx="2" />
+                                        <path d="M9 9h6v6H9z" />
+                                        <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+                                    </svg></div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" id="cpuBar"
+                                    style="width:0;background:linear-gradient(90deg,var(--accent),#5a8af7)"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card glow-green">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value green" id="memUsage">-</div>
+                                    <div class="stat-label">Memory</div>
+                                </div>
+                                <div class="stat-icon green"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <rect x="2" y="6" width="20" height="12" rx="2" />
+                                        <path d="M6 10v4M10 10v4M14 10v4M18 10v4" />
+                                    </svg></div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" id="memBar"
+                                    style="width:0;background:linear-gradient(90deg,var(--green),#39d2c0)"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card glow-yellow">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value yellow" id="diskUsage">-</div>
+                                    <div class="stat-label">Disk</div>
+                                </div>
+                                <div class="stat-icon yellow"><svg width="18" height="18" fill="none"
+                                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                                    </svg></div>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" id="diskBar"
+                                    style="width:0;background:linear-gradient(90deg,var(--yellow),#d4a044)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">📈 Query Statistics</span>
+                            <div class="graph-controls">
+                                <button class="range-btn" data-range="1h" onclick="setRange('1h')">1H</button>
+                                <button class="range-btn" data-range="12h" onclick="setRange('12h')">12H</button>
+                                <button class="range-btn active" data-range="24h" onclick="setRange('24h')">24H</button>
+                                <button class="range-btn" data-range="7d" onclick="setRange('7d')">7D</button>
+                            </div>
+                        </div>
+                        <div class="card-body"><canvas id="qpsChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div id="page-network" class="page">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🌐 Network Interfaces</span></div>
+                            <div class="card-body">
+                                <div class="form-label">Configure Interface</div>
+                                <div class="form-row" style="margin-bottom:10px">
+                                    <select id="ifaceSelect" onchange="loadIfaceConfig()"
+                                        style="flex:1;margin:0"></select>
+                                    <label
+                                        style="display:flex;align-items:center;gap:6px;color:var(--text-dim);white-space:nowrap;font-size:13px"><input
+                                            type="radio" name="ifaceMode" value="dhcp" id="modeDhcp"
+                                            onchange="toggleIfaceMode()" checked> DHCP</label>
+                                    <label
+                                        style="display:flex;align-items:center;gap:6px;color:var(--text-dim);white-space:nowrap;font-size:13px"><input
+                                            type="radio" name="ifaceMode" value="static" id="modeStatic"
+                                            onchange="toggleIfaceMode()"> Static</label>
+                                </div>
+                                <div id="staticFields" style="display:none">
                                     <input id="staticIp" placeholder="IPv4/Prefix (e.g. 192.168.1.100/24)"
-                                        style="flex:2;margin:0;">
-                                </div>
-                                <div class="form-row" style="margin-bottom:8px;">
+                                        style="margin-bottom:8px">
                                     <input id="staticGateway" placeholder="IPv4 Gateway (e.g. 192.168.1.1)"
-                                        style="flex:2;margin:0;">
+                                        style="margin-bottom:8px">
+                                    <input id="staticIp6" placeholder="IPv6/Prefix (optional)"
+                                        style="margin-bottom:8px">
+                                    <input id="staticGateway6" placeholder="IPv6 Gateway (optional)"
+                                        style="margin-bottom:8px">
                                 </div>
-                                <div class="form-row" style="margin-bottom:8px;">
-                                    <input id="staticIp6" placeholder="IPv6/Prefix (e.g. 2001:db8::1/64) - optional"
-                                        style="flex:2;margin:0;">
-                                </div>
-                                <div class="form-row" style="margin-bottom:8px;">
-                                    <input id="staticGateway6"
-                                        placeholder="IPv6 Gateway (e.g. 2001:db8::ffff) - optional"
-                                        style="flex:2;margin:0;">
-                                </div>
+                                <button class="btn btn-primary" onclick="applyIfaceConfig()"
+                                    style="width:100%;margin-top:4px">Apply Configuration</button>
                             </div>
-                            <button class="btn btn-blue" onclick="applyIfaceConfig()"
-                                style="width:100%;margin-top:8px;">Apply Configuration</button>
                         </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Access Control</span></div>
-                    <div class="card-body">
-                        <div class="scroll-box" id="aclList"></div>
-                        <div style="margin-top:20px;">
-                            <div class="form-label">Add ACL</div>
-                            <div class="form-row">
-                                <input id="aclNetwork" placeholder="10.0.0.0/8" style="flex:2;margin:0;">
-                                <select id="aclAction" style="flex:1;margin:0;">
-                                    <option value="allow">Allow</option>
-                                    <option value="deny">Deny</option>
-                                </select>
-                                <button class="btn btn-blue" onclick="addAcl()">Add</button>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🔐 Access Control</span></div>
+                            <div class="card-body">
+                                <div class="scroll-box" id="aclList"></div>
+                                <div style="margin-top:16px">
+                                    <div class="form-label">Add ACL</div>
+                                    <div class="form-row">
+                                        <input id="aclNetwork" placeholder="10.0.0.0/8" style="flex:2;margin:0">
+                                        <select id="aclAction" style="flex:1;margin:0">
+                                            <option value="allow">Allow</option>
+                                            <option value="deny">Deny</option>
+                                        </select>
+                                        <button class="btn btn-primary btn-sm" onclick="addAcl()">Add</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Filters -->
-        <div id="page-config" class="page">
-            <div class="page-header">
-                <span class="page-title">Filters</span>
-            </div>
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Sinkhole IP</span></div>
-                    <div class="card-body">
-                        <div class="form-label">IPv4</div>
-                        <input id="sinkholeIpv4" placeholder="103.217.209.188">
-                        <div class="form-label">IPv6</div>
-                        <input id="sinkholeIpv6" placeholder="2001:db8::1">
-                        <button class="btn btn-blue" onclick="saveSinkhole()" style="width:100%;">Save</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Forwarders</span></div>
-                    <div class="card-body">
-                        <div class="scroll-box" id="forwarderList"
-                            style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:6px;padding:8px;">
+                <!-- Filters -->
+                <div id="page-config" class="page">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🎯 Sinkhole IP</span></div>
+                            <div class="card-body">
+                                <div class="form-label">IPv4</div><input id="sinkholeIpv4"
+                                    placeholder="103.217.209.188">
+                                <div class="form-label">IPv6</div><input id="sinkholeIpv6" placeholder="2001:db8::1">
+                                <button class="btn btn-primary" onclick="saveSinkhole()"
+                                    style="width:100%">Save</button>
+                            </div>
                         </div>
-                        <div class="form-row">
-                            <input id="forwarderInput" placeholder="domain,ip" style="flex:1;margin:0;">
-                            <button class="btn btn-blue" onclick="addForwarder()">Add</button>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🔀 Forwarders</span></div>
+                            <div class="card-body">
+                                <div class="scroll-box" id="forwarderList"
+                                    style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius-xs);padding:8px">
+                                </div>
+                                <div class="form-row"><input id="forwarderInput" placeholder="domain,ip"
+                                        style="flex:1;margin:0"><button class="btn btn-primary btn-sm"
+                                        onclick="addForwarder()">Add</button></div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Custom Blocklist</span> <span
-                            class="badge badge-deny">Block</span></div>
-                    <div class="card-body">
-                        <div class="scroll-box" id="customBlockList"
-                            style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:6px;padding:8px;">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🚫 Custom Blocklist</span> <span
+                                    class="badge badge-deny">Block</span></div>
+                            <div class="card-body">
+                                <div class="scroll-box" id="customBlockList"
+                                    style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius-xs);padding:8px">
+                                </div>
+                                <textarea id="customBlockInput"
+                                    placeholder="Enter domains (one per line)&#10;example.com&#10;domain.org"
+                                    style="height:80px;resize:vertical"></textarea>
+                                <button class="btn btn-primary" onclick="addCustomBlock()" style="width:100%">Add
+                                    Domains</button>
+                            </div>
                         </div>
-                        <textarea id="customBlockInput"
-                            placeholder="Enter domains (one per line):&#10;example.com&#10;domain.org&#10;site.net"
-                            style="width:100%;height:80px;margin-bottom:8px;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-family:inherit;"></textarea>
-                        <button class="btn btn-blue" onclick="addCustomBlock()" style="width:100%;">Add Domains</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Whitelist</span> <span
-                            class="badge badge-allow">Allow</span></div>
-                    <div class="card-body">
-                        <div class="scroll-box" id="whitelistList"
-                            style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:6px;padding:8px;">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">✅ Whitelist</span> <span
+                                    class="badge badge-allow">Allow</span></div>
+                            <div class="card-body">
+                                <div class="scroll-box" id="whitelistList"
+                                    style="max-height:150px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius-xs);padding:8px">
+                                </div>
+                                <textarea id="whitelistInputNew"
+                                    placeholder="Enter domains (one per line)&#10;example.com&#10;domain.org"
+                                    style="height:80px;resize:vertical"></textarea>
+                                <button class="btn btn-primary" onclick="addWhitelist()" style="width:100%">Add
+                                    Domains</button>
+                            </div>
                         </div>
-                        <textarea id="whitelistInputNew"
-                            placeholder="Enter domains (one per line):&#10;example.com&#10;domain.org&#10;site.net"
-                            style="width:100%;height:80px;margin-bottom:8px;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-family:inherit;"></textarea>
-                        <button class="btn btn-blue" onclick="addWhitelist()" style="width:100%;">Add Domains</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tools -->
-        <div id="page-tools" class="page">
-            <div class="page-header">
-                <span class="page-title">Tools</span>
-            </div>
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Search Blocklist</span></div>
-                    <div class="card-body">
-                        <div class="form-row">
-                            <input id="searchKeyword" placeholder="xxx or *porn* or gambling*" style="flex:1;margin:0;">
-                            <button class="btn btn-blue" onclick="searchDomains()">Search</button>
-                        </div>
-                        <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">
-                            Wildcard: *keyword* (contains), keyword* (starts), *keyword (ends)
-                        </div>
-                        <div id="searchInfo" style="margin-top:12px;font-size:13px;display:none;"></div>
-                        <pre id="searchResult" class="result-box" style="max-height:300px;"></pre>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header"><span class="card-title">DNS Lookup</span></div>
-                    <div class="card-body">
-                        <div class="form-row">
-                            <input id="digDomain" placeholder="google.com" style="flex:1;margin:0;">
-                            <select id="digType" style="width:80px;margin:0;">
-                                <option>A</option>
-                                <option>AAAA</option>
-                                <option>MX</option>
-                                <option>NS</option>
-                                <option>TXT</option>
-                            </select>
-                            <button class="btn btn-blue" onclick="runDig()">Dig</button>
+                <!-- Tools -->
+                <div id="page-tools" class="page">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🔍 Search Blocklist</span></div>
+                            <div class="card-body">
+                                <div class="form-row"><input id="searchKeyword" placeholder="*porn* or gambling*"
+                                        style="flex:1;margin:0"><button class="btn btn-primary btn-sm"
+                                        onclick="searchDomains()">Search</button></div>
+                                <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Wildcard: *keyword*
+                                    (contains), keyword* (starts), *keyword (ends)</div>
+                                <div id="searchInfo" style="margin-top:10px;font-size:13px;display:none"></div>
+                                <pre id="searchResult" class="result-box" style="max-height:300px"></pre>
+                            </div>
                         </div>
-                        <pre id="digResult" class="result-box"></pre>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🌍 DNS Lookup</span></div>
+                            <div class="card-body">
+                                <div class="form-row"><input id="digDomain" placeholder="google.com"
+                                        style="flex:1;margin:0">
+                                    <select id="digType" style="width:80px;margin:0">
+                                        <option>A</option>
+                                        <option>AAAA</option>
+                                        <option>MX</option>
+                                        <option>NS</option>
+                                        <option>TXT</option>
+                                    </select>
+                                    <button class="btn btn-primary btn-sm" onclick="runDig()">Dig</button>
+                                </div>
+                                <pre id="digResult" class="result-box"></pre>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">📡 Ping</span></div>
+                            <div class="card-body">
+                                <div class="form-row"><input id="pingHost" placeholder="8.8.8.8"
+                                        style="flex:1;margin:0"><button class="btn btn-primary btn-sm"
+                                        onclick="runPing()">Ping</button></div>
+                                <pre id="pingResult" class="result-box"></pre>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🗺️ MTR</span></div>
+                            <div class="card-body">
+                                <div class="form-row"><input id="mtrHost" placeholder="8.8.8.8"
+                                        style="flex:1;margin:0"><button class="btn btn-primary btn-sm"
+                                        onclick="runMtr()">Run</button></div>
+                                <pre id="mtrResult" class="result-box"></pre>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Ping</span></div>
-                    <div class="card-body">
-                        <div class="form-row">
-                            <input id="pingHost" placeholder="8.8.8.8" style="flex:1;margin:0;">
-                            <button class="btn btn-blue" onclick="runPing()">Ping</button>
-                        </div>
-                        <pre id="pingResult" class="result-box"></pre>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">MTR</span></div>
-                    <div class="card-body">
-                        <div class="form-row">
-                            <input id="mtrHost" placeholder="8.8.8.8" style="flex:1;margin:0;">
-                            <button class="btn btn-blue" onclick="runMtr()">Run</button>
-                        </div>
-                        <pre id="mtrResult" class="result-box"></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Account -->
-        <div id="page-account" class="page">
-            <div class="page-header">
-                <span class="page-title">Account</span>
-            </div>
-            <div class="grid-2">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Owner Profile</span></div>
-                    <div class="card-body">
-                        <div class="form-label">Name</div>
-                        <input id="ownerName" placeholder="Your Name">
-                        <div class="form-label">Email</div>
-                        <input id="ownerEmail" placeholder="email@example.com" type="email">
-                        <div class="form-label">Phone</div>
-                        <input id="ownerPhone" placeholder="+62 xxx">
-                        <div class="form-label">Organization</div>
-                        <input id="ownerOrg" placeholder="Company/ISP Name">
-                        <button class="btn btn-blue" onclick="saveProfile()" style="width:100%;margin-top:12px;">Save
-                            Profile</button>
+                <!-- Account -->
+                <div id="page-account" class="page">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">👤 Owner Profile</span></div>
+                            <div class="card-body">
+                                <div class="form-label">Name</div><input id="ownerName" placeholder="Your Name">
+                                <div class="form-label">Email</div><input id="ownerEmail"
+                                    placeholder="email@example.com" type="email">
+                                <div class="form-label">Phone</div><input id="ownerPhone" placeholder="+62 xxx">
+                                <div class="form-label">Organization</div><input id="ownerOrg"
+                                    placeholder="Company / ISP Name">
+                                <button class="btn btn-primary" onclick="saveProfile()"
+                                    style="width:100%;margin-top:6px">Save Profile</button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><span class="card-title">🔑 Change Password</span></div>
+                            <div class="card-body">
+                                <div class="form-label">Current Password</div><input id="currentPassword"
+                                    type="password" placeholder="Current password">
+                                <div class="form-label">New Password</div><input id="newPassword" type="password"
+                                    placeholder="New password">
+                                <div class="form-label">Confirm Password</div><input id="confirmPassword"
+                                    type="password" placeholder="Confirm new password">
+                                <button class="btn btn-primary" onclick="changePasswordNew()"
+                                    style="width:100%;margin-top:6px">Change Password</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Change Password</span></div>
-                    <div class="card-body">
-                        <div class="form-label">Current Password</div>
-                        <input id="currentPassword" type="password" placeholder="Current password">
-                        <div class="form-label">New Password</div>
-                        <input id="newPassword" type="password" placeholder="New password">
-                        <div class="form-label">Confirm Password</div>
-                        <input id="confirmPassword" type="password" placeholder="Confirm new password">
-                        <button class="btn btn-blue" onclick="changePasswordNew()"
-                            style="width:100%;margin-top:12px;">Change Password</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+            </div><!-- /content -->
+        </div><!-- /main -->
+    </div><!-- /app -->
 
     <div id="alert" class="alert"></div>
     <div id="passwordModal" class="modal">
@@ -850,10 +1405,9 @@
             <input type="password" id="currentPass" placeholder="Current Password">
             <input type="password" id="newPass" placeholder="New Password">
             <input type="password" id="confirmPass" placeholder="Confirm Password">
-            <div class="form-row" style="margin-top:12px;">
-                <button class="btn btn-blue" onclick="changePassword()" style="flex:1;">Save</button>
-                <button class="btn btn-gray" onclick="hidePasswordModal()" style="flex:1;">Cancel</button>
-            </div>
+            <div class="form-row" style="margin-top:12px"><button class="btn btn-primary" onclick="changePassword()"
+                    style="flex:1">Save</button><button class="btn btn-secondary" onclick="hidePasswordModal()"
+                    style="flex:1">Cancel</button></div>
         </div>
     </div>
 
@@ -861,177 +1415,85 @@
         const API = ''; let graphData = [], currentRange = '24h', lastNetStats = null, lastNetTime = null;
         const titles = { dashboard: 'Dashboard', network: 'Settings', config: 'Filters', tools: 'Tools', account: 'Account' };
 
-        function showPage(p) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); document.getElementById('page-' + p).classList.add('active'); event.target.classList.add('active'); if (p === 'dashboard') { fetchStats(); fetchGraph(); fetchSystemStats(); } }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show') }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show') }
 
-        document.addEventListener('DOMContentLoaded', () => { fetchAll(); setInterval(fetchStats, 5000); setInterval(fetchGraph, 10000); setInterval(fetchSystemStats, 5000); });
-        async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchCustomBlock(), fetchWhitelist(), fetchGraph(), fetchSystemStats(), loadProfile()]); fetchIfaceConfigs(); }
-        function setRange(r) { currentRange = r; document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('active', b.dataset.range === r)); fetchGraph(); }
-
-        async function fetchStats() { try { const r = await fetch(API + '/api/stats'); if (r.status === 401) { window.location.href = '/login'; return; } const d = await r.json(); document.getElementById('totalQueries').textContent = formatNumber(d.total_queries); document.getElementById('cacheHits').textContent = formatNumber(d.cache_hits); document.getElementById('uptime').textContent = formatUptime(d.uptime); document.getElementById('qps').textContent = d.qps.toFixed(1); if (d.blocklist_size !== undefined) document.getElementById('blocklistCount').textContent = (d.blocklist_size || 0).toLocaleString(); document.getElementById('statusBadge').textContent = 'ONLINE'; document.getElementById('statusBadge').style.background = 'var(--green)'; } catch (e) { document.getElementById('statusBadge').textContent = 'OFFLINE'; document.getElementById('statusBadge').style.background = 'var(--red)'; } }
-
-        async function fetchSystemStats() { try { const r = await fetch(API + '/api/system'); const d = await r.json(); if (d.cpu) document.getElementById('cpuLoad').textContent = d.cpu.load1.toFixed(2); if (d.memory) { const u = (d.memory.used_mb / 1024).toFixed(1), t = (d.memory.total_mb / 1024).toFixed(0); document.getElementById('memUsage').textContent = u + '/' + t + 'G'; } if (d.disk) document.getElementById('diskUsage').textContent = d.disk.used_gb.toFixed(0) + '/' + d.disk.total_gb.toFixed(0) + 'G'; if (d.network) { const now = Date.now(); if (lastNetStats && lastNetTime) { const el = (now - lastNetTime) / 1000, df = ((d.network.rx_mb - lastNetStats.rx) + (d.network.tx_mb - lastNetStats.tx)) * 1024 * 8 / el; document.getElementById('netTraffic').textContent = df > 1000 ? (df / 1000).toFixed(1) + ' Mbps' : df.toFixed(0) + ' Kbps'; } else document.getElementById('netTraffic').textContent = '...'; lastNetStats = { rx: d.network.rx_mb, tx: d.network.tx_mb }; lastNetTime = now; } } catch (e) { } }
-
-        async function fetchGraph() { try { const r = await fetch(API + '/api/graph?period=' + currentRange); const d = await r.json(); if (d.history) { graphData = d.history; drawChart(); } } catch (e) { } }
-
-        function drawChart() { const c = document.getElementById('qpsChart'), ctx = c.getContext('2d'); const w = c.width = c.offsetWidth, h = c.height = c.offsetHeight; ctx.clearRect(0, 0, w, h); if (graphData.length < 2) return; const v = graphData.map(d => d.qps), mx = Math.max(...v, 1); const p = { t: 10, b: 25, l: 50, r: 10 }, gw = w - p.l - p.r, gh = h - p.t - p.b; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.fillStyle = '#64748b'; ctx.font = '11px system-ui'; ctx.textAlign = 'right'; for (let i = 0; i <= 4; i++) { const y = p.t + (gh * i / 4); ctx.beginPath(); ctx.moveTo(p.l, y); ctx.lineTo(w - p.r, y); ctx.stroke(); ctx.fillText(formatNumber(mx - mx * i / 4), p.l - 8, y + 4); } ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath(); const st = gw / (graphData.length - 1); graphData.forEach((d, i) => { const x = p.l + i * st, y = p.t + gh - (d.qps / mx) * gh; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }); ctx.stroke(); ctx.lineTo(p.l + gw, p.t + gh); ctx.lineTo(p.l, p.t + gh); const gr = ctx.createLinearGradient(0, p.t, 0, p.t + gh); gr.addColorStop(0, 'rgba(59,130,246,0.2)'); gr.addColorStop(1, 'rgba(59,130,246,0)'); ctx.fillStyle = gr; ctx.fill(); ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; for (let i = 0; i <= 4; i++) { const idx = Math.floor(i * (graphData.length - 1) / 4); if (graphData[idx]) { const x = p.l + idx * st, t = new Date(graphData[idx].time * 1000); ctx.fillText(t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }), x, h - 8); } } }
-
-        function formatUptime(s) { if (s >= 86400) return `${Math.floor(s / 86400)}d ${Math.floor((s % 86400) / 3600)}h`; if (s >= 3600) return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`; return `${Math.floor(s / 60)}m`; }
-        function formatNumber(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return typeof n === 'number' ? n.toFixed(0) : n.toString(); }
-
-        async function fetchInterfaces() { try { const r = await fetch(API + '/api/interfaces'); const d = await r.json(); const s = document.getElementById('ifaceSelect'); s.innerHTML = ''; d.interfaces.forEach(i => { s.innerHTML += `<option>${i.name}</option>`; }); } catch (e) { } }
-
-        async function fetchAcl() { try { const r = await fetch(API + '/api/acl'); const d = await r.json(); const l = document.getElementById('aclList'); l.innerHTML = ''; d.acl.forEach(x => { l.innerHTML += `<div class="acl-item"><span>${x.network}</span><span class="badge badge-${x.action}">${x.action}</span></div>`; }); } catch (e) { } }
-
-        async function fetchSinkhole() { try { const r = await fetch(API + '/api/sinkhole'); const d = await r.json(); document.getElementById('sinkholeIpv4').value = d.ipv4 || ''; document.getElementById('sinkholeIpv6').value = d.ipv6 || ''; } catch (e) { } }
-        async function saveSinkhole() { const r = await fetch(API + '/api/sinkhole', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ipv4: document.getElementById('sinkholeIpv4').value, ipv6: document.getElementById('sinkholeIpv6').value }) }); const d = await r.json(); showAlert(d.success ? 'Saved!' : d.error, d.success ? 'success' : 'error'); }
-
-        async function fetchForwarders() { try { const r = await fetch(API + '/api/forwarders'); const d = await r.json(); const l = document.getElementById('forwarderList'); l.innerHTML = d.forwarders?.length ? d.forwarders.map(f => `<div style="padding:8px 0;border-bottom:1px solid var(--border);">${f.name} → ${f.addrs.join(', ')}</div>`).join('') : '<span style="color:var(--text-dim);">No forwarders</span>'; } catch (e) { } }
-        async function addForwarder() { const i = document.getElementById('forwarderInput').value.trim(); if (!i) return; const p = i.split(',').map(x => x.trim()); if (p.length < 2) return showAlert('Format: domain,ip,...', 'error'); const r = await fetch(API + '/api/forwarders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: p[0], addrs: p.slice(1) }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('forwarderInput').value = ''; fetchForwarders(); } else showAlert(d.error, 'error'); }
-
-        async function fetchCustomBlock() { try { const r = await fetch(API + '/api/custom-blocklist'); const d = await r.json(); const l = document.getElementById('customBlockList'); l.innerHTML = d.domains?.length ? d.domains.map(x => `<div class="list-item" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;"><span>${x}</span><a onclick="delCustomBlock('${x}')" style="cursor:pointer;color:var(--red);">×</a></div>`).join('') : '<span style="color:var(--text-dim);">Empty</span>'; } catch (e) { } }
-        async function addCustomBlock() { const i = document.getElementById('customBlockInput'); const text = i.value.trim(); if (!text) return; const domains = text.split('\n').map(d => d.trim()).filter(d => d && d.includes('.')); if (!domains.length) { showAlert('No valid domains', 'error'); return; } let added = 0, failed = 0; for (const d of domains) { try { const r = await fetch(API + '/api/custom-blocklist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) added++; else failed++; } catch (e) { failed++; } } i.value = ''; fetchCustomBlock(); showAlert(`Added ${added} domain(s)` + (failed ? `, ${failed} failed` : ''), added ? 'success' : 'error'); }
-        async function delCustomBlock(d) { if (!confirm('Remove ' + d + '?')) return; const r = await fetch(API + '/api/custom-blocklist/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { fetchCustomBlock(); showAlert('Removed!', 'success'); } else showAlert(res.error, 'error'); }
-
-        async function fetchWhitelist() { try { const r = await fetch(API + '/api/whitelist'); const d = await r.json(); const l = document.getElementById('whitelistList'); l.innerHTML = d.domains?.length ? d.domains.map(x => `<div class="list-item" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;"><span>${x}</span><a onclick="delWhitelist('${x}')" style="cursor:pointer;color:var(--red);">×</a></div>`).join('') : '<span style="color:var(--text-dim);">Empty</span>'; } catch (e) { } }
-        async function addWhitelist() { const i = document.getElementById('whitelistInputNew'); const text = i.value.trim(); if (!text) return; const domains = text.split('\n').map(d => d.trim()).filter(d => d && d.includes('.')); if (!domains.length) { showAlert('No valid domains', 'error'); return; } let added = 0, failed = 0; for (const d of domains) { try { const r = await fetch(API + '/api/whitelist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) added++; else failed++; } catch (e) { failed++; } } i.value = ''; fetchWhitelist(); showAlert(`Added ${added} domain(s)` + (failed ? `, ${failed} failed` : ''), added ? 'success' : 'error'); }
-        async function delWhitelist(d) { if (!confirm('Remove ' + d + '?')) return; const r = await fetch(API + '/api/whitelist/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { setTimeout(() => fetchWhitelist(), 500); showAlert('Removed!', 'success'); } else showAlert(res.error, 'error'); }
-
-
-        async function searchDomains() {
-            const keyword = document.getElementById('searchKeyword').value.trim();
-            const info = document.getElementById('searchInfo');
-            const result = document.getElementById('searchResult');
-            if (!keyword || keyword.length < 2) { showAlert('Keyword minimal 2 karakter', 'error'); return; }
-            info.style.display = 'block'; info.textContent = 'Searching...';
-            result.style.display = 'none';
-            try {
-                const res = await fetch(API + '/api/search-domains?keyword=' + encodeURIComponent(keyword) + '&limit=100');
-                const data = await res.json();
-                if (data.error) { info.innerHTML = '<span style="color:var(--red)">' + data.error + '</span>'; return; }
-                info.innerHTML = 'Found <strong>' + data.count + '</strong> results (from ' + formatNumber(data.total_domains) + ' domains)';
-                if (data.results && data.results.length > 0) {
-                    result.style.display = 'block';
-                    result.textContent = data.results.join('\n');
-                }
-            } catch (e) { info.innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>'; }
+        function showPage(p, el) {
+            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+            document.getElementById('page-' + p).classList.add('active');
+            if (el) el.classList.add('active');
+            document.getElementById('pageTitle').textContent = titles[p] || p;
+            const da = document.getElementById('topbarActions');
+            da.querySelectorAll('.btn-primary,.btn-danger').forEach(b => b.style.display = p === 'dashboard' ? '' : 'none');
+            if (p === 'dashboard') { fetchStats(); fetchGraph(); fetchSystemStats() }
+            closeSidebar();
         }
-        async function runDig() { const d = document.getElementById('digDomain').value.trim(); const t = document.getElementById('digType').value; const r = document.getElementById('digResult'); if (!d) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/dig?domain=' + encodeURIComponent(d) + '&type=' + t); const data = await res.json(); r.textContent = data.output || data.error; }
-        async function runPing() { const h = document.getElementById('pingHost').value.trim(); const r = document.getElementById('pingResult'); if (!h) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/ping?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error; }
-        async function runMtr() { const h = document.getElementById('mtrHost').value.trim(); const r = document.getElementById('mtrResult'); if (!h) return; r.style.display = 'block'; r.textContent = 'Running...'; const res = await fetch(API + '/api/mtr?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error; }
 
-        async function reload() { const r = await fetch(API + '/api/reload', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Reloaded!' : d.error, d.success ? 'success' : 'error'); }
-        async function restart() { if (!confirm('Restart?')) return; const r = await fetch(API + '/api/restart', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Restarted!' : d.error, d.success ? 'success' : 'error'); }
-        async function addIp() { /* Legacy - replaced by applyIfaceConfig */ }
+        document.addEventListener('DOMContentLoaded', () => { fetchAll(); setInterval(fetchStats, 5000); setInterval(fetchGraph, 10000); setInterval(fetchSystemStats, 5000) });
+        async function fetchAll() { await Promise.all([fetchStats(), fetchInterfaces(), fetchAcl(), fetchSinkhole(), fetchForwarders(), fetchCustomBlock(), fetchWhitelist(), fetchGraph(), fetchSystemStats(), loadProfile()]); fetchIfaceConfigs() }
+        function setRange(r) { currentRange = r; document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('active', b.dataset.range === r)); fetchGraph() }
+
+        async function fetchStats() { try { const r = await fetch(API + '/api/stats'); if (r.status === 401) { window.location.href = '/login'; return } const d = await r.json(); document.getElementById('totalQueries').textContent = formatNumber(d.total_queries); document.getElementById('cacheHits').textContent = formatNumber(d.cache_hits); document.getElementById('uptime').textContent = formatUptime(d.uptime); document.getElementById('qps').textContent = d.qps.toFixed(1); if (d.blocklist_size !== undefined) document.getElementById('blocklistCount').textContent = (d.blocklist_size || 0).toLocaleString(); document.getElementById('statusDot').className = 'status-dot'; document.getElementById('statusText').textContent = 'Online' } catch (e) { document.getElementById('statusDot').className = 'status-dot offline'; document.getElementById('statusText').textContent = 'Offline' } }
+
+        async function fetchSystemStats() { try { const r = await fetch(API + '/api/system'); const d = await r.json(); if (d.cpu) { document.getElementById('cpuLoad').textContent = d.cpu.load1.toFixed(2); document.getElementById('cpuBar').style.width = Math.min(d.cpu.load1 * 25, 100) + '%' } if (d.memory) { const u = (d.memory.used_mb / 1024).toFixed(1), t = (d.memory.total_mb / 1024).toFixed(0), pct = d.memory.used_mb / d.memory.total_mb * 100; document.getElementById('memUsage').textContent = u + '/' + t + 'G'; document.getElementById('memBar').style.width = pct.toFixed(0) + '%' } if (d.disk) { const pct = d.disk.used_gb / d.disk.total_gb * 100; document.getElementById('diskUsage').textContent = d.disk.used_gb.toFixed(0) + '/' + d.disk.total_gb.toFixed(0) + 'G'; document.getElementById('diskBar').style.width = pct.toFixed(0) + '%' } if (d.network) { const now = Date.now(); if (lastNetStats && lastNetTime) { const el = (now - lastNetTime) / 1000, df = ((d.network.rx_mb - lastNetStats.rx) + (d.network.tx_mb - lastNetStats.tx)) * 1024 * 8 / el } lastNetStats = { rx: d.network.rx_mb, tx: d.network.tx_mb }; lastNetTime = now } } catch (e) { } }
+
+        async function fetchGraph() { try { const r = await fetch(API + '/api/graph?period=' + currentRange); const d = await r.json(); if (d.history) { graphData = d.history; drawChart() } } catch (e) { } }
+
+        function drawChart() {
+            const c = document.getElementById('qpsChart'), ctx = c.getContext('2d'); const w = c.width = c.offsetWidth, h = c.height = c.offsetHeight; ctx.clearRect(0, 0, w, h); if (graphData.length < 2) return; const v = graphData.map(d => d.qps), mx = Math.max(...v, 1); const p = { t: 10, b: 25, l: 50, r: 10 }, gw = w - p.l - p.r, gh = h - p.t - p.b;
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1; ctx.fillStyle = 'var(--text-dim)'; ctx.font = '11px Inter,system-ui'; ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) { const y = p.t + (gh * i / 4); ctx.beginPath(); ctx.moveTo(p.l, y); ctx.lineTo(w - p.r, y); ctx.stroke(); ctx.fillStyle = '#7d8590'; ctx.fillText(formatNumber(mx - mx * i / 4), p.l - 8, y + 4) }
+            // Line
+            const grad = ctx.createLinearGradient(0, p.t, 0, p.t + gh); grad.addColorStop(0, 'rgba(99,140,255,0.3)'); grad.addColorStop(1, 'rgba(99,140,255,0)');
+            ctx.strokeStyle = '#638cff'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.beginPath(); const st = gw / (graphData.length - 1);
+            graphData.forEach((d, i) => { const x = p.l + i * st, y = p.t + gh - (d.qps / mx) * gh; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y) }); ctx.stroke();
+            ctx.lineTo(p.l + gw, p.t + gh); ctx.lineTo(p.l, p.t + gh); ctx.fillStyle = grad; ctx.fill();
+            // Time labels
+            ctx.fillStyle = '#484f58'; ctx.textAlign = 'center'; for (let i = 0; i <= 4; i++) { const idx = Math.floor(i * (graphData.length - 1) / 4); if (graphData[idx]) { const x = p.l + idx * st, t = new Date(graphData[idx].time * 1000); ctx.fillText(t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }), x, h - 8) } }
+        }
+
+        function formatUptime(s) { if (s >= 86400) return `${Math.floor(s / 86400)}d ${Math.floor((s % 86400) / 3600)}h`; if (s >= 3600) return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`; return `${Math.floor(s / 60)}m` }
+        function formatNumber(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K'; return typeof n === 'number' ? n.toFixed(0) : n.toString() }
+
+        async function fetchInterfaces() { try { const r = await fetch(API + '/api/interfaces'); const d = await r.json(); const s = document.getElementById('ifaceSelect'); s.innerHTML = ''; d.interfaces.forEach(i => { s.innerHTML += `<option>${i.name}</option>` }) } catch (e) { } }
+        async function fetchAcl() { try { const r = await fetch(API + '/api/acl'); const d = await r.json(); const l = document.getElementById('aclList'); l.innerHTML = ''; d.acl.forEach(x => { l.innerHTML += `<div class="acl-item"><span>${x.network}</span><span class="badge badge-${x.action}">${x.action}</span></div>` }) } catch (e) { } }
+        async function fetchSinkhole() { try { const r = await fetch(API + '/api/sinkhole'); const d = await r.json(); document.getElementById('sinkholeIpv4').value = d.ipv4 || ''; document.getElementById('sinkholeIpv6').value = d.ipv6 || '' } catch (e) { } }
+        async function saveSinkhole() { const r = await fetch(API + '/api/sinkhole', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ipv4: document.getElementById('sinkholeIpv4').value, ipv6: document.getElementById('sinkholeIpv6').value }) }); const d = await r.json(); showAlert(d.success ? 'Saved!' : d.error, d.success ? 'success' : 'error') }
+        async function fetchForwarders() { try { const r = await fetch(API + '/api/forwarders'); const d = await r.json(); const l = document.getElementById('forwarderList'); l.innerHTML = d.forwarders?.length ? d.forwarders.map(f => `<div class="list-item"><span>${f.name} → ${f.addrs.join(', ')}</span></div>`).join('') : '<span style="color:var(--text-muted)">No forwarders</span>' } catch (e) { } }
+        async function addForwarder() { const i = document.getElementById('forwarderInput').value.trim(); if (!i) return; const p = i.split(',').map(x => x.trim()); if (p.length < 2) return showAlert('Format: domain,ip,...', 'error'); const r = await fetch(API + '/api/forwarders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: p[0], addrs: p.slice(1) }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('forwarderInput').value = ''; fetchForwarders() } else showAlert(d.error, 'error') }
+        async function fetchCustomBlock() { try { const r = await fetch(API + '/api/custom-blocklist'); const d = await r.json(); const l = document.getElementById('customBlockList'); l.innerHTML = d.domains?.length ? d.domains.map(x => `<div class="list-item"><span>${x}</span><button class="del-btn" onclick="delCustomBlock('${x}')">×</button></div>`).join('') : '<span style="color:var(--text-muted)">Empty</span>' } catch (e) { } }
+        async function addCustomBlock() { const i = document.getElementById('customBlockInput'); const text = i.value.trim(); if (!text) return; const domains = text.split('\n').map(d => d.trim()).filter(d => d && d.includes('.')); if (!domains.length) { showAlert('No valid domains', 'error'); return } let added = 0, failed = 0; for (const d of domains) { try { const r = await fetch(API + '/api/custom-blocklist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) added++; else failed++ } catch (e) { failed++ } } i.value = ''; fetchCustomBlock(); showAlert(`Added ${added} domain(s)` + (failed ? `, ${failed} failed` : ''), added ? 'success' : 'error') }
+        async function delCustomBlock(d) { if (!confirm('Remove ' + d + '?')) return; const r = await fetch(API + '/api/custom-blocklist/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { fetchCustomBlock(); showAlert('Removed!', 'success') } else showAlert(res.error, 'error') }
+        async function fetchWhitelist() { try { const r = await fetch(API + '/api/whitelist'); const d = await r.json(); const l = document.getElementById('whitelistList'); l.innerHTML = d.domains?.length ? d.domains.map(x => `<div class="list-item"><span>${x}</span><button class="del-btn" onclick="delWhitelist('${x}')">×</button></div>`).join('') : '<span style="color:var(--text-muted)">Empty</span>' } catch (e) { } }
+        async function addWhitelist() { const i = document.getElementById('whitelistInputNew'); const text = i.value.trim(); if (!text) return; const domains = text.split('\n').map(d => d.trim()).filter(d => d && d.includes('.')); if (!domains.length) { showAlert('No valid domains', 'error'); return } let added = 0, failed = 0; for (const d of domains) { try { const r = await fetch(API + '/api/whitelist/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) added++; else failed++ } catch (e) { failed++ } } i.value = ''; fetchWhitelist(); showAlert(`Added ${added} domain(s)` + (failed ? `, ${failed} failed` : ''), added ? 'success' : 'error') }
+        async function delWhitelist(d) { if (!confirm('Remove ' + d + '?')) return; const r = await fetch(API + '/api/whitelist/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ domain: d }) }); const res = await r.json(); if (res.success) { setTimeout(() => fetchWhitelist(), 500); showAlert('Removed!', 'success') } else showAlert(res.error, 'error') }
+
+        async function searchDomains() { const keyword = document.getElementById('searchKeyword').value.trim(); const info = document.getElementById('searchInfo'); const result = document.getElementById('searchResult'); if (!keyword || keyword.length < 2) { showAlert('Keyword minimal 2 karakter', 'error'); return } info.style.display = 'block'; info.textContent = 'Searching...'; result.style.display = 'none'; try { const res = await fetch(API + '/api/search-domains?keyword=' + encodeURIComponent(keyword) + '&limit=100'); const data = await res.json(); if (data.error) { info.innerHTML = '<span style="color:var(--red)">' + data.error + '</span>'; return } info.innerHTML = 'Found <strong>' + data.count + '</strong> results (from ' + formatNumber(data.total_domains) + ' domains)'; if (data.results && data.results.length > 0) { result.style.display = 'block'; result.textContent = data.results.join('\n') } } catch (e) { info.innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>' } }
+        async function runDig() { const d = document.getElementById('digDomain').value.trim(); const t = document.getElementById('digType').value; const r = document.getElementById('digResult'); if (!d) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/dig?domain=' + encodeURIComponent(d) + '&type=' + t); const data = await res.json(); r.textContent = data.output || data.error }
+        async function runPing() { const h = document.getElementById('pingHost').value.trim(); const r = document.getElementById('pingResult'); if (!h) return; r.style.display = 'block'; r.textContent = '...'; const res = await fetch(API + '/api/ping?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error }
+        async function runMtr() { const h = document.getElementById('mtrHost').value.trim(); const r = document.getElementById('mtrResult'); if (!h) return; r.style.display = 'block'; r.textContent = 'Running...'; const res = await fetch(API + '/api/mtr?host=' + encodeURIComponent(h)); const data = await res.json(); r.textContent = data.output || data.error }
+
+        async function reload() { const r = await fetch(API + '/api/reload', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Reloaded!' : d.error, d.success ? 'success' : 'error') }
+        async function restart() { if (!confirm('Restart Unbound?')) return; const r = await fetch(API + '/api/restart', { method: 'POST' }); const d = await r.json(); showAlert(d.success ? 'Restarted!' : d.error, d.success ? 'success' : 'error') }
 
         let ifaceConfigs = {};
-        function toggleIfaceMode() {
-            const isStatic = document.getElementById('modeStatic').checked;
-            document.getElementById('staticFields').style.display = isStatic ? 'block' : 'none';
-        }
+        function toggleIfaceMode() { document.getElementById('staticFields').style.display = document.getElementById('modeStatic').checked ? 'block' : 'none' }
+        async function loadIfaceConfig() { const iface = document.getElementById('ifaceSelect').value; if (!iface) return; const cfg = ifaceConfigs[iface]; if (cfg) { document.getElementById('modeDhcp').checked = cfg.mode === 'dhcp'; document.getElementById('modeStatic').checked = cfg.mode === 'static'; document.getElementById('staticIp').value = cfg.ip || ''; document.getElementById('staticGateway').value = cfg.gateway || ''; document.getElementById('staticIp6').value = cfg.ip6 || ''; document.getElementById('staticGateway6').value = cfg.gateway6 || '' } else { document.getElementById('modeDhcp').checked = true; document.getElementById('modeStatic').checked = false; document.getElementById('staticIp').value = ''; document.getElementById('staticGateway').value = ''; document.getElementById('staticIp6').value = ''; document.getElementById('staticGateway6').value = '' } toggleIfaceMode() }
+        async function fetchIfaceConfigs() { try { const r = await fetch(API + '/api/interface/config'); const d = await r.json(); ifaceConfigs = d.configs || {}; setTimeout(loadIfaceConfig, 100) } catch (e) { } }
+        async function applyIfaceConfig() { const iface = document.getElementById('ifaceSelect').value; const mode = document.getElementById('modeStatic').checked ? 'static' : 'dhcp'; const ip = document.getElementById('staticIp').value.trim(); const gateway = document.getElementById('staticGateway').value.trim(); const ip6 = document.getElementById('staticIp6').value.trim(); const gateway6 = document.getElementById('staticGateway6').value.trim(); if (!iface) { showAlert('Select interface', 'error'); return } if (mode === 'static' && !ip) { showAlert('IPv4/Prefix required', 'error'); return } if (mode === 'static' && !ip.includes('/')) { showAlert('Include prefix (e.g. /24)', 'error'); return } if (ip6 && !ip6.includes('/')) { showAlert('IPv6 needs prefix', 'error'); return } if (!confirm(`Apply ${mode.toUpperCase()} config to ${iface}?`)) return; const r = await fetch(API + '/api/interface/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ interface: iface, mode, ip, gateway, ip6, gateway6 }) }); const d = await r.json(); if (d.success) { showAlert('Applied! Network may reconnect.', 'success'); setTimeout(() => { fetchInterfaces(); fetchIfaceConfigs() }, 2000) } else showAlert(d.error, 'error') }
+        async function addAcl() { const n = document.getElementById('aclNetwork').value, a = document.getElementById('aclAction').value; if (!n) return; const r = await fetch(API + '/api/acl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', network: n, acl_action: a }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('aclNetwork').value = ''; fetchAcl() } else showAlert(d.error, 'error') }
 
-        async function loadIfaceConfig() {
-            const iface = document.getElementById('ifaceSelect').value;
-            if (!iface) return;
-            const cfg = ifaceConfigs[iface];
-            if (cfg) {
-                document.getElementById('modeDhcp').checked = cfg.mode === 'dhcp';
-                document.getElementById('modeStatic').checked = cfg.mode === 'static';
-                document.getElementById('staticIp').value = cfg.ip || '';
-                document.getElementById('staticGateway').value = cfg.gateway || '';
-                document.getElementById('staticIp6').value = cfg.ip6 || '';
-                document.getElementById('staticGateway6').value = cfg.gateway6 || '';
-            } else {
-                document.getElementById('modeDhcp').checked = true;
-                document.getElementById('modeStatic').checked = false;
-                document.getElementById('staticIp').value = '';
-                document.getElementById('staticGateway').value = '';
-                document.getElementById('staticIp6').value = '';
-                document.getElementById('staticGateway6').value = '';
-            }
-            toggleIfaceMode();
-        }
+        function logout() { window.location.href = '/api/logout' }
+        function showPasswordModal() { document.getElementById('passwordModal').classList.add('show') }
+        function hidePasswordModal() { document.getElementById('passwordModal').classList.remove('show') }
+        async function changePassword() { const c = document.getElementById('currentPass').value, n = document.getElementById('newPass').value, cf = document.getElementById('confirmPass').value; if (n !== cf) return showAlert('Mismatch', 'error'); const r = await fetch(API + '/api/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current: c, new: n }) }); const d = await r.json(); if (d.success) { showAlert('Changed!', 'success'); hidePasswordModal() } else showAlert(d.error, 'error') }
+        function showAlert(m, t) { const a = document.getElementById('alert'); a.textContent = m; a.className = 'alert alert-' + t; a.style.display = 'block'; setTimeout(() => a.style.display = 'none', 3000) }
 
-        async function fetchIfaceConfigs() {
-            try {
-                const r = await fetch(API + '/api/interface/config');
-                const d = await r.json();
-                ifaceConfigs = d.configs || {};
-                setTimeout(loadIfaceConfig, 100);
-            } catch (e) { }
-        }
-
-        async function applyIfaceConfig() {
-            const iface = document.getElementById('ifaceSelect').value;
-            const mode = document.getElementById('modeStatic').checked ? 'static' : 'dhcp';
-            const ip = document.getElementById('staticIp').value.trim();
-            const gateway = document.getElementById('staticGateway').value.trim();
-            const ip6 = document.getElementById('staticIp6').value.trim();
-            const gateway6 = document.getElementById('staticGateway6').value.trim();
-
-            if (!iface) { showAlert('Select interface', 'error'); return; }
-            if (mode === 'static' && !ip) { showAlert('IPv4/Prefix required (e.g. 192.168.1.100/24)', 'error'); return; }
-            if (mode === 'static' && !ip.includes('/')) { showAlert('Include prefix (e.g. /24)', 'error'); return; }
-            if (ip6 && !ip6.includes('/')) { showAlert('IPv6 needs prefix (e.g. /64)', 'error'); return; }
-
-            if (!confirm(`Apply ${mode.toUpperCase()} config to ${iface}?`)) return;
-
-            const r = await fetch(API + '/api/interface/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ interface: iface, mode, ip, gateway, ip6, gateway6 })
-            });
-            const d = await r.json();
-            if (d.success) {
-                showAlert('Applied! Network may reconnect.', 'success');
-                setTimeout(() => { fetchInterfaces(); fetchIfaceConfigs(); }, 2000);
-            } else showAlert(d.error, 'error');
-        }
-        async function addAcl() { const n = document.getElementById('aclNetwork').value, a = document.getElementById('aclAction').value; if (!n) return; const r = await fetch(API + '/api/acl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', network: n, acl_action: a }) }); const d = await r.json(); if (d.success) { showAlert('Added!', 'success'); document.getElementById('aclNetwork').value = ''; fetchAcl(); } else showAlert(d.error, 'error'); }
-
-        function logout() { window.location.href = '/api/logout'; }
-        function showPasswordModal() { document.getElementById('passwordModal').classList.add('show'); }
-        function hidePasswordModal() { document.getElementById('passwordModal').classList.remove('show'); }
-        async function changePassword() { const c = document.getElementById('currentPass').value, n = document.getElementById('newPass').value, cf = document.getElementById('confirmPass').value; if (n !== cf) return showAlert('Mismatch', 'error'); const r = await fetch(API + '/api/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current: c, new: n }) }); const d = await r.json(); if (d.success) { showAlert('Changed!', 'success'); hidePasswordModal(); } else showAlert(d.error, 'error'); }
-        function showAlert(m, t) { const a = document.getElementById('alert'); a.textContent = m; a.className = 'alert alert-' + t; a.style.display = 'block'; setTimeout(() => a.style.display = 'none', 3000); }
-
-        async function loadProfile() {
-            try {
-                const r = await fetch(API + '/api/profile');
-                const d = await r.json();
-                document.getElementById('ownerName').value = d.name || '';
-                document.getElementById('ownerEmail').value = d.email || '';
-                document.getElementById('ownerPhone').value = d.phone || '';
-                document.getElementById('ownerOrg').value = d.organization || '';
-            } catch (e) { }
-        }
-
-        async function saveProfile() {
-            const data = {
-                name: document.getElementById('ownerName').value,
-                email: document.getElementById('ownerEmail').value,
-                phone: document.getElementById('ownerPhone').value,
-                organization: document.getElementById('ownerOrg').value
-            };
-            const r = await fetch(API + '/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            const d = await r.json();
-            showAlert(d.success ? 'Profile saved!' : d.error, d.success ? 'success' : 'error');
-        }
-
-        async function changePasswordNew() {
-            const current = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirm = document.getElementById('confirmPassword').value;
-            if (newPass !== confirm) return showAlert('Passwords do not match', 'error');
-            if (newPass.length < 4) return showAlert('Password too short (min 4 chars)', 'error');
-            const r = await fetch(API + '/api/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current, new: newPass }) });
-            const d = await r.json();
-            if (d.success) {
-                showAlert('Password changed!', 'success');
-                document.getElementById('currentPassword').value = '';
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-            } else showAlert(d.error, 'error');
-        }
+        async function loadProfile() { try { const r = await fetch(API + '/api/profile'); const d = await r.json(); document.getElementById('ownerName').value = d.name || ''; document.getElementById('ownerEmail').value = d.email || ''; document.getElementById('ownerPhone').value = d.phone || ''; document.getElementById('ownerOrg').value = d.organization || '' } catch (e) { } }
+        async function saveProfile() { const data = { name: document.getElementById('ownerName').value, email: document.getElementById('ownerEmail').value, phone: document.getElementById('ownerPhone').value, organization: document.getElementById('ownerOrg').value }; const r = await fetch(API + '/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); const d = await r.json(); showAlert(d.success ? 'Profile saved!' : d.error, d.success ? 'success' : 'error') }
+        async function changePasswordNew() { const current = document.getElementById('currentPassword').value; const newPass = document.getElementById('newPassword').value; const confirm = document.getElementById('confirmPassword').value; if (newPass !== confirm) return showAlert('Passwords do not match', 'error'); if (newPass.length < 4) return showAlert('Password too short (min 4 chars)', 'error'); const r = await fetch(API + '/api/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current, new: newPass }) }); const d = await r.json(); if (d.success) { showAlert('Password changed!', 'success'); document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = '' } else showAlert(d.error, 'error') }
     </script>
 </body>
 

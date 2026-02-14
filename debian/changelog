@@ -1,3 +1,17 @@
+unbound-webui (1.0.14-1) stable; urgency=medium
+
+  * Modern enterprise dark theme UI redesign
+  * Tokyo Night color palette with glassmorphism effects
+  * Collapsible sidebar navigation replacing top tabs
+  * SVG icons replacing emoji for professional look
+  * Gradient buttons, animated stat cards, mesh background
+  * Responsive design with mobile sidebar toggle
+  * Login page redesigned with dark theme
+  * Blocked page redesigned with dark theme
+  * Added blocked.html to debian package
+
+ -- Najieb Haswell <najieb@haswell.my.id>  Fri, 14 Feb 2026 14:58:00 +0700
+
 unbound-webui (1.0.12-1) stable; urgency=medium
 
   * HTTPS support with self-signed SSL certificate

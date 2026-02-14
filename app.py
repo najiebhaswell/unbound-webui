@@ -300,168 +300,43 @@ class UnboundHandler(http.server.SimpleHTTPRequestHandler):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - TrustPositif DNS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --border: #e2e8f0;
-    --text: #1e293b;
-    --text-dim: #64748b;
-    --primary: #3b82f6;
-    --green: #22c55e;
-}
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.login-box {
-    background: var(--card);
-    padding: 48px 40px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    width: 100%;
-    max-width: 400px;
-}
-.logo {
-    text-align: center;
-    margin-bottom: 32px;
-}
-.logo-icon { font-size: 48px; }
-.logo-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-top: 12px;
-}
-.logo-badge {
-    display: inline-block;
-    background: var(--green);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 8px;
-}
-input {
-    width: 100%;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 15px;
-    margin-bottom: 16px;
-    transition: all 0.2s;
-}
-input:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: white;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-}
-input::placeholder { color: var(--text-dim); }
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: var(--primary);
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-button:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-}
-.error {
-    color: #ef4444;
-    text-align: center;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: #fef2f2;
-    border-radius: 8px;
-    font-size: 14px;
-    display: none;
-}
-.footer {
-    text-align: center;
-    margin-top: 24px;
-    color: var(--text-dim);
-    font-size: 13px;
-}
-.forgot-link {
-    text-align: center;
-    margin-top: 16px;
-}
-.forgot-link a {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 14px;
-    cursor: pointer;
-}
-.forgot-link a:hover { text-decoration: underline; }
-.modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-.modal.show { display: flex; }
-.modal-box {
-    background: var(--card);
-    padding: 32px;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 400px;
-}
-.modal-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 20px;
-    text-align: center;
-}
-.modal-info {
-    background: #fef9c3;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #854d0e;
-    margin-bottom: 16px;
-}
-.btn-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-}
-.btn-row button { flex: 1; }
-.btn-gray {
-    background: #94a3b8;
-}
-.btn-gray:hover {
-    background: #64748b;
-}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:#0b0e14;color:#e6edf3;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(99,140,255,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(57,210,192,.06) 0%,transparent 50%);pointer-events:none}
+.login-box{background:rgba(17,22,34,.8);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);padding:48px 40px;border-radius:16px;border:1px solid rgba(255,255,255,.06);box-shadow:0 24px 48px rgba(0,0,0,.4);width:100%;max-width:420px;position:relative;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.logo{text-align:center;margin-bottom:36px}
+.logo-icon{font-size:52px;display:block;margin-bottom:12px}
+.logo-text{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#638cff,#39d2c0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;font-weight:600;color:#7d8590;letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+input{width:100%;padding:13px 16px;border:1px solid rgba(255,255,255,.06);border-radius:8px;background:rgba(13,17,23,.8);color:#e6edf3;font-size:14px;font-family:inherit;margin-bottom:14px;transition:all .2s}
+input:focus{outline:none;border-color:rgba(99,140,255,.5);box-shadow:0 0 0 3px rgba(99,140,255,.1);background:rgba(13,17,23,.95)}
+input::placeholder{color:#484f58}
+button{width:100%;padding:13px;border:none;border-radius:8px;background:linear-gradient(135deg,#638cff,#5a7ae6);color:#fff;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s}
+button:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,140,255,.3)}
+.error{color:#f85149;text-align:center;margin-bottom:14px;padding:12px;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.2);border-radius:8px;font-size:13px;display:none}
+.footer{text-align:center;margin-top:24px;color:#484f58;font-size:12px}
+.forgot-link{text-align:center;margin-top:16px}
+.forgot-link a{color:#638cff;text-decoration:none;font-size:13px;cursor:pointer}
+.forgot-link a:hover{text-decoration:underline}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.modal.show{display:flex}
+.modal-box{background:rgba(17,22,34,.95);border:1px solid rgba(255,255,255,.06);padding:32px;border-radius:16px;width:100%;max-width:420px;box-shadow:0 24px 48px rgba(0,0,0,.5)}
+.modal-title{font-size:1.15rem;font-weight:600;margin-bottom:20px;text-align:center}
+.modal-info{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.2);padding:12px;border-radius:8px;font-size:12px;color:#d29922;margin-bottom:16px}
+.btn-row{display:flex;gap:12px;margin-top:16px}
+.btn-row button{flex:1}
+.btn-gray{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+.btn-gray:hover{background:rgba(255,255,255,.1);box-shadow:none;transform:none}
 </style>
 </head><body>
 <div class="login-box">
     <div class="logo">
-        <div class="logo-icon">🛡️</div>
+        <span class="logo-icon">🛡️</span>
         <div class="logo-text">TrustPositif DNS</div>
-        <div class="logo-badge">SECURE LOGIN</div>
+        <div class="logo-sub">Management Console</div>
     </div>
     <div id="error" class="error"></div>
     <form onsubmit="login(event)">
@@ -475,7 +350,7 @@ button:hover {
 <div id="forgotModal" class="modal">
     <div class="modal-box">
         <div class="modal-title">Reset Password</div>
-        <div id="resetNotify" class="reset-notify" style="display:none;"></div>
+        <div id="resetNotify" style="display:none;"></div>
         <div class="modal-info">Masukkan email yang terdaftar di Owner Profile untuk verifikasi identitas.</div>
         <input type="email" id="verifyEmail" placeholder="Email terdaftar">
         <input type="password" id="resetNewPass" placeholder="Password baru">
@@ -515,12 +390,13 @@ function showResetNotify(msg, isSuccess) {
     const el = document.getElementById('resetNotify');
     el.textContent = msg;
     el.style.display = 'block';
-    el.style.background = isSuccess ? '#dcfce7' : '#fee2e2';
-    el.style.color = isSuccess ? '#166534' : '#dc2626';
+    el.style.background = isSuccess ? 'rgba(63,185,80,.1)' : 'rgba(248,81,73,.1)';
+    el.style.color = isSuccess ? '#3fb950' : '#f85149';
     el.style.padding = '12px';
     el.style.borderRadius = '8px';
     el.style.marginBottom = '12px';
-    el.style.fontSize = '14px';
+    el.style.fontSize = '13px';
+    el.style.border = isSuccess ? '1px solid rgba(63,185,80,.2)' : '1px solid rgba(248,81,73,.2)';
 }
 async function resetPassword() {
     const email = document.getElementById('verifyEmail').value;
